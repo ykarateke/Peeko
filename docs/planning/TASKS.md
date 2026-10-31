@@ -15,7 +15,8 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 
 ## M2 — Inspect + Color
 
-- [~] Styles panel UI built with mock data (colors + typography); needs wiring to real page extraction.
+- [x] Styles panel wired to **real page extraction** (`core/extract.ts`): palette + fonts + element count from the active tab, via content → background relay; toolbar rescan; loading/restricted states.
+- [~] F2: dominant-palette extraction (done, by frequency) — still needs Pick Color (EyeDropper) + Export Palette + HEX/RGB/HSL toggle.
 - [ ] F1: overlay hover/selection layer (Shadow DOM isolated).
 - [ ] F1: `getComputedStyle` reader → `ElementInfo` grouped (typography/color/layout/border-effects).
 - [ ] F1: panel renders groups; one-click copy per value.

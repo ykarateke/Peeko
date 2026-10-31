@@ -7,10 +7,26 @@ export interface ElementInfo {
   borderEffects: Record<string, string>;
 }
 
+export interface FontToken {
+  name: string;
+  role: string;
+  css: string;
+  tw: string;
+  weights: number[];
+}
+
+/** Styles extracted from the active page (Styles panel). */
+export interface PageStyles {
+  colors: string[]; // hex, most frequent first
+  fonts: FontToken[];
+  elementCount: number;
+}
+
 export type Msg =
   | { type: 'TOGGLE_INSPECT' }
   | { type: 'STOP_INSPECT' }
   | { type: 'GET_INSPECT_STATUS' }
+  | { type: 'GET_PAGE_STYLES' }
   | { type: 'ELEMENT_CLICKED'; data: ElementInfo }
   | { type: 'INSPECTOR_STOPPED' }
   | { type: 'OPEN_OVERLAY'; tabId?: number }

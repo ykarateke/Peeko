@@ -10,9 +10,10 @@ import {
 interface Props {
   inspecting: boolean;
   onToggleInspect: () => void;
+  onRescan: () => void;
 }
 
-export function Toolbar({ inspecting, onToggleInspect }: Props) {
+export function Toolbar({ inspecting, onToggleInspect, onRescan }: Props) {
   return (
     <div className="toolbar">
       <button
@@ -28,7 +29,7 @@ export function Toolbar({ inspecting, onToggleInspect }: Props) {
       <button className="icon-btn" title="Measure / ruler">
         <RulerIcon />
       </button>
-      <button className="icon-btn" title="Re-scan page">
+      <button className="icon-btn" title="Re-scan page" onClick={onRescan}>
         <RefreshIcon />
       </button>
       <button className="icon-btn" title="Saved">

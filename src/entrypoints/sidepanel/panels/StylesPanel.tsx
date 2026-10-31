@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { COLORS, ACCENTS, FONTS } from '../data';
+import { type FontToken } from '../../../core/messaging';
 import {
   PaletteIcon,
   TypeIcon,
@@ -20,8 +20,15 @@ function isLight(hex: string): boolean {
   return 0.299 * r + 0.587 * g + 0.114 * b > 225;
 }
 
-export function StylesPanel() {
+interface Props {
+  colors: string[];
+  fonts: FontToken[];
+}
+
+export function StylesPanel({ colors, fonts }: Props) {
   const [copied, setCopied] = useState<string | null>(null);
+  const bigColors = colors.slice(0, 10);
+  const accentColors = colors.slice(10);
 
   function copy(text: string) {
     navigator.clipboard?.writeText(text).then(
@@ -46,7 +53,7 @@ export function StylesPanel() {
       </div>
 
       <div className="swatch-grid">
-        {COLORS.map((c, i) => (
+        {bigColors.map((c, i) => (
           <button
             key={`${c}-${i}`}
             className={`swatch${isLight(c) ? ' is-light' : ''}${copied === c ? ' is-copied' : ''}`}
@@ -57,17 +64,19 @@ export function StylesPanel() {
         ))}
       </div>
 
-      <div className="swatch-row-sm">
-        {ACCENTS.map((c, i) => (
-          <button
-            key={`${c}-${i}`}
-            className={`swatch-sm${isLight(c) ? ' is-light' : ''}`}
-            style={{ background: c }}
-            title={c}
-            onClick={() => copy(c)}
-          />
-        ))}
-      </div>
+      {accentColors.length > 0 && (
+        <div className="swatch-row-sm">
+          {accentColors.map((c, i) => (
+            <button
+              key={`${c}-${i}`}
+              className={`swatch-sm${isLight(c) ? ' is-light' : ''}`}
+              style={{ background: c }}
+              title={c}
+              onClick={() => copy(c)}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="btn-row">
         <button className="btn">
@@ -85,7 +94,7 @@ export function StylesPanel() {
         </span>
       </div>
 
-      {FONTS.map((f) => (
+      {fonts.map((f) => (
         <div className="font-card" key={f.name}>
           <div className="font-card-head">
             <div>

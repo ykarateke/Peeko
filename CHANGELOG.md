@@ -11,7 +11,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Product name finalized as **Peeko** (previously the working name "PageLens").
 - **MIT** `LICENSE` (ADR-009).
 - **M1 skeleton:** WXT + React + TypeScript project; side panel (Chrome `side_panel` / Firefox `sidebar_action`), background relay with inject-and-retry + `RestrictedTabError`, minimal content script. Both targets build green.
-- **Styles panel UI** (first panel, mock data): toolbar, tabs (Styles/Assets/Inspect/Design), COLORS swatch grid with Pick Color / Export Palette, TYPOGRAPHY font cards with one-click CSS/TW copy and weight chips, footer.
+- **Styles panel UI** (first panel): toolbar, tabs (Styles/Assets/Inspect/Design), COLORS swatch grid, TYPOGRAPHY font cards with one-click CSS/TW copy and weight chips, footer.
+- **Real page extraction** (`core/extract.ts`): the Styles panel now reads the active page's dominant color palette, font families (with weights) and element count via the content → background relay, with a toolbar rescan and loading/restricted states. (Pick Color / Export Palette still pending.)
 
 ### Planned
 See [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md) for the milestone plan (M1–M6) toward v1.

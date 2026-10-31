@@ -4,21 +4,20 @@ import { type Msg, RestrictedTabError } from '../core/messaging';
 // WXT's `browser` is the cross-browser accessor (the documented
 // `globalThis.browser?.runtime?.id ? browser : chrome` shim).
 
+// Panel -> page messages that the background forwards to the active tab.
+const RELAYED: ReadonlySet<Msg['type']> = new Set(['TOGGLE_INSPECT', 'GET_PAGE_STYLES']);
+
 export default defineBackground(() => {
   // Chrome: open the side panel when the toolbar icon is clicked.
   browser.sidePanel
     ?.setPanelBehavior?.({ openPanelOnActionClick: true })
     .catch(() => {});
 
-  // Panel -> page messages are relayed here with inject-and-retry.
-  // M1: the Styles panel uses mock data; only the Inspect toggle exercises this path.
   browser.runtime.onMessage.addListener((message: Msg, _sender, sendResponse) => {
-    if (message.type === 'TOGGLE_INSPECT') {
+    if (RELAYED.has(message.type)) {
       relayToActiveTab(message)
-        .then((res) => sendResponse({ ok: true, res }))
-        .catch((err: unknown) =>
-          sendResponse({ ok: false, error: errorKind(err) }),
-        );
+        .then((data) => sendResponse({ ok: true, data }))
+        .catch((err: unknown) => sendResponse({ ok: false, error: errorKind(err) }));
       return true; // async response
     }
     return undefined;
@@ -49,17 +48,12 @@ async function relayToActiveTab(message: Msg): Promise<unknown> {
 }
 
 function isNoReceiver(err: unknown): boolean {
-  return (
-    err instanceof Error &&
-    /receiving end does not exist/i.test(err.message)
-  );
+  return err instanceof Error && /receiving end does not exist/i.test(err.message);
 }
 
 function isRestrictedUrl(url?: string): boolean {
   if (!url) return true;
-  return /^(chrome|edge|about|moz-extension|chrome-extension|view-source|devtools):/i.test(
-    url,
-  );
+  return /^(chrome|edge|about|moz-extension|chrome-extension|view-source|devtools):/i.test(url);
 }
 
 function errorKind(err: unknown): string {
