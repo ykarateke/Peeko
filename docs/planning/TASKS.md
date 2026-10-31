@@ -4,17 +4,18 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 
 ## M1 — Skeleton
 
-- [ ] Initialize WXT + React + TypeScript project (pnpm), ESLint + Prettier.
-- [ ] Define `entrypoints/` (background, sidepanel, content, overlay.content, simulator.content) and `core/` layout.
-- [ ] Manifest permissions: `downloads, activeTab, scripting, sidePanel, storage, tabs` + host `<all_urls>`.
-- [ ] Cross-browser shim; Chrome `sidePanel` / Firefox `sidebarAction`.
-- [ ] Side panel shell with empty tabs (Inspector, Assets, Design System, Simulator, Settings).
-- [ ] `core/messaging.ts` `Msg` union (source of truth).
-- [ ] Background relay with inject-and-retry + `RestrictedTabError`.
-- [ ] CI: lint + typecheck + `wxt build` (both targets) green.
+- [x] Initialize WXT + React + TypeScript project (pnpm). _(ESLint + Prettier: TODO)_
+- [x] Define `entrypoints/` (background, sidepanel, content) and `core/` layout. _(overlay/simulator content scripts: M2/M5)_
+- [x] Manifest permissions: `downloads, activeTab, scripting, sidePanel, storage, tabs` + host `<all_urls>`.
+- [x] Cross-browser via WXT `browser`; Chrome `side_panel` / Firefox `sidebar_action`.
+- [x] Side panel shell with tabs (Styles, Assets, Inspect, Design — no Pro/account per product rules).
+- [x] `core/messaging.ts` `Msg` union (source of truth) + `RestrictedTabError`.
+- [x] Background relay with inject-and-retry + `RestrictedTabError`.
+- [x] `wxt build` green on both targets + `tsc --noEmit` clean. _(CI pipeline file: TODO)_
 
 ## M2 — Inspect + Color
 
+- [~] Styles panel UI built with mock data (colors + typography); needs wiring to real page extraction.
 - [ ] F1: overlay hover/selection layer (Shadow DOM isolated).
 - [ ] F1: `getComputedStyle` reader → `ElementInfo` grouped (typography/color/layout/border-effects).
 - [ ] F1: panel renders groups; one-click copy per value.
