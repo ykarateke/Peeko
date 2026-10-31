@@ -38,10 +38,10 @@ export function StylesPanel() {
       {/* COLORS */}
       <div className="section-head">
         <span className="section-title">
-          <PaletteIcon size={16} /> COLORS
+          <PaletteIcon size={14} /> COLORS
         </span>
         <button className="btn btn-sm">
-          <HeartIcon size={15} /> Save Website
+          <HeartIcon size={13} /> Save Website
         </button>
       </div>
 
@@ -71,17 +71,17 @@ export function StylesPanel() {
 
       <div className="btn-row">
         <button className="btn">
-          <EyedropperIcon size={16} /> Pick Color
+          <EyedropperIcon size={14} /> Pick Color
         </button>
         <button className="btn">
-          <DownloadIcon size={16} /> Export Palette
+          <DownloadIcon size={14} /> Export Palette
         </button>
       </div>
 
       {/* TYPOGRAPHY */}
       <div className="section-head section-head-gap">
         <span className="section-title">
-          <TypeIcon size={16} /> TYPOGRAPHY
+          <TypeIcon size={14} /> TYPOGRAPHY
         </span>
       </div>
 
@@ -94,10 +94,10 @@ export function StylesPanel() {
             </div>
             <div className="font-actions">
               <button className="chip-btn" title="Preview">
-                <SearchIcon size={16} />
+                <SearchIcon size={14} />
               </button>
               <button className="chip-btn" title="Save font">
-                <BookmarkIcon size={16} />
+                <BookmarkIcon size={14} />
               </button>
             </div>
           </div>

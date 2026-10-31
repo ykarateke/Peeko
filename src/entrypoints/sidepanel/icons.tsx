@@ -3,7 +3,7 @@ import type { SVGProps } from 'react';
 
 type P = SVGProps<SVGSVGElement> & { size?: number };
 
-function Svg({ size = 20, children, ...rest }: P & { children: React.ReactNode }) {
+function Svg({ size = 17, children, ...rest }: P & { children: React.ReactNode }) {
   return (
     <svg
       width={size}
