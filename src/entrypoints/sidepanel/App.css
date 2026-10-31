@@ -187,7 +187,7 @@ body {
 }
 .swatch {
   position: relative;
-  aspect-ratio: 1 / 0.78;
+  aspect-ratio: 1 / 1;
   border: 1px solid transparent;
   border-radius: var(--radius);
   cursor: pointer;
