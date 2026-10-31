@@ -1,0 +1,30 @@
+# Agent / AI assistant files — local only, not pushed
+CLAUDE.md
+AGENTS.md
+.claude/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# WXT / Vite build output
+.output/
+.wxt/
+dist/
+stats.html
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
