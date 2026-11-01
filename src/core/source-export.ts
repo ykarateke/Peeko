@@ -47,6 +47,20 @@ export function rewriteCssUrls(css: string, map: (url: string) => string | null)
   });
 }
 
+/** Pick the highest-resolution candidate from a srcset, else the fallback src. */
+export function pickSrcset(srcset: string | null, fallback: string | null): string | null {
+  if (!srcset) return fallback;
+  let best: { url: string; score: number } | null = null;
+  for (const part of srcset.split(',')) {
+    const [url, desc] = part.trim().split(/\s+/);
+    if (!url) continue;
+    const m = (desc ?? '').match(/(\d+(?:\.\d+)?)(w|x)/);
+    const score = m?.[1] ? parseFloat(m[1]) : 1;
+    if (!best || score > best.score) best = { url, score };
+  }
+  return best?.url ?? fallback;
+}
+
 /** Extract absolute url() targets from a CSS string, resolved against baseUrl. */
 export function cssUrlRefs(css: string, baseUrl: string): string[] {
   const out: string[] = [];

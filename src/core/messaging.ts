@@ -167,6 +167,7 @@ export type Msg =
   | { type: 'CAPTURE_FULL_PAGE' }
   | { type: 'GET_PAGE_METRICS' }
   | { type: 'PREP_CAPTURE' }
+  | { type: 'SET_FIXED'; hidden: boolean }
   | { type: 'SCROLL_TO'; y: number }
   | { type: 'END_CAPTURE' }
   | { type: 'DOWNLOAD_IMAGE'; url: string; filename: string }

@@ -107,16 +107,14 @@ export default defineContentScript({
     }
 
     function prepCapture() {
+      // Discover fixed/sticky elements but keep them visible — they stay for the first (top) tile.
       const hidden: { el: HTMLElement; vis: string }[] = [];
       for (const el of Array.from(document.querySelectorAll<HTMLElement>('body *')).slice(
         0,
         5000,
       )) {
         const pos = getComputedStyle(el).position;
-        if (pos === 'fixed' || pos === 'sticky') {
-          hidden.push({ el, vis: el.style.visibility });
-          el.style.visibility = 'hidden';
-        }
+        if (pos === 'fixed' || pos === 'sticky') hidden.push({ el, vis: el.style.visibility });
       }
       capturePrev = {
         y: window.scrollY,
@@ -124,6 +122,11 @@ export default defineContentScript({
         hidden,
       };
       document.documentElement.style.scrollBehavior = 'auto';
+    }
+
+    function setFixedHidden(hide: boolean) {
+      if (!capturePrev) return;
+      for (const h of capturePrev.hidden) h.el.style.visibility = hide ? 'hidden' : h.vis;
     }
 
     function endCapture() {
@@ -191,6 +194,11 @@ export default defineContentScript({
         case 'PREP_CAPTURE':
           if (!isTopFrame) return undefined;
           prepCapture();
+          sendResponse({ ok: true });
+          return true;
+        case 'SET_FIXED':
+          if (!isTopFrame) return undefined;
+          setFixedHidden(message.hidden);
           sendResponse({ ok: true });
           return true;
         case 'SCROLL_TO':

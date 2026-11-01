@@ -160,10 +160,15 @@ async function captureFullPage(): Promise<{ metrics: PageMetrics; tiles: Capture
   const tiles: CaptureTile[] = [];
   try {
     const offsets = tileOffsets(metrics.scrollHeight, metrics.innerHeight).slice(0, MAX_TILES);
-    for (const y of offsets) {
-      await send({ type: 'SCROLL_TO', y });
+    for (let i = 0; i < offsets.length; i++) {
+      await send({ type: 'SCROLL_TO', y: offsets[i]! });
+      // Keep fixed/sticky (e.g. the navbar) on the first/top tile; hide after so it doesn't repeat.
+      if (i === 1) await send({ type: 'SET_FIXED', hidden: true });
       await delay(CAPTURE_DELAY);
-      tiles.push({ y, dataUrl: await browser.tabs.captureVisibleTab(windowId, { format: 'png' }) });
+      tiles.push({
+        y: offsets[i]!,
+        dataUrl: await browser.tabs.captureVisibleTab(windowId, { format: 'png' }),
+      });
     }
   } finally {
     await send({ type: 'END_CAPTURE' }).catch(() => {});

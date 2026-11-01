@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isSafeUrl, sanitizeName, rewriteCssUrls, cssUrlRefs } from './source-export';
+import { isSafeUrl, sanitizeName, rewriteCssUrls, cssUrlRefs, pickSrcset } from './source-export';
 
 describe('isSafeUrl', () => {
   it('allows public http/https', () => {
@@ -34,6 +34,14 @@ describe('rewriteCssUrls', () => {
     expect(out).toContain("url('../assets/x.png')");
     expect(out).toContain('url(/y.png)');
   });
+});
+
+describe('pickSrcset', () => {
+  it('falls back without srcset', () => expect(pickSrcset(null, '/a.png')).toBe('/a.png'));
+  it('picks largest width', () =>
+    expect(pickSrcset('/s.png 480w, /m.png 800w, /l.png 1200w', null)).toBe('/l.png'));
+  it('picks highest density', () =>
+    expect(pickSrcset('/a.png 1x, /b.png 2x', null)).toBe('/b.png'));
 });
 
 describe('cssUrlRefs', () => {

@@ -60,7 +60,10 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 ## Capture & Export (independent module)
 
 - [x] Phase 1: **Export tab** — full-page (scroll-stitch), viewport, pick-element screenshots; PNG/JPEG/WebP; session gallery (`ExportPanel.tsx`, `capture.ts`, `core/capture-math.ts`, background `CAPTURE_FULL_PAGE`). Extension-native (no server/Playwright).
-- [x] Phase 2: **Website Source Export (ZIP)** — fetch HTML/CSS/JS/assets, localize links + CSS `url()` rewrite, JSZip + resource `manifest.json` + success rate; **SSRF guard** (block non-http(s)/localhost/private-IP/metadata), timeout/retry, size+count caps; copyright notice in manifest. _(bare `@import "..."` strings + inline-`<style>` url() not yet localized; `<script>` kept as-is)_
+- [x] Phase 2: **Faithful snapshot (single `.html`)** — SingleFile-style inline (CSS/images/srcset/fonts as data URIs, `@import` resolved), scripts removed, `<base>` safety net; **SSRF guard** + size caps (`sidepanel/snapshot.ts`, `core/source-export.ts`). Replaced the broken multi-file ZIP clone.
+- [x] Full-page screenshot keeps fixed/sticky (navbar) on the first tile only (no repeat / no vanish).
+- [ ] Multi-file "dev source files" ZIP (raw files + manifest) as a separate optional export.
+- [ ] Snapshot: shadow DOM / `<canvas>` / very large + cross-origin-blocked asset inlining.
 - [ ] Persistent capture/export history (IndexedDB) linked to the analysis.
 - [ ] Device-specific full-page capture (via the simulator window); keep the sticky header only on the first tile.
 
