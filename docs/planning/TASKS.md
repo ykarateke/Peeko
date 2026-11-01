@@ -38,6 +38,8 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 - [x] F4: pure exporters — CSS, SCSS, JSON (DTCG-style), Tailwind v4 `@theme`, Markdown + **AI Agent Brief** (`core/exporters.ts`).
 - [x] F4: exporter unit tests (parse/validate — `exporters.test.ts`, 8 cases).
 - [x] F4: `DesignPanel` — format selector, live preview, copy + download (per-format filename); shared `download.ts` helper (Styles/Assets refactored onto it).
+- [x] F4: **Design System Inspection — Phase 1**: typed origin model (Extracted/Inferred/Normalized + confidence/occurrence/source), categorized Color System + slide-over inspector + similar-color, semantic text styles, extracted+normalized spacing, design style + consistency score, token table, interactive preview, Figma export (`classify.ts`, `Inspector.tsx`, `DesignOverview.tsx`). Component Library = Phase 2.
+- [ ] F4 Phase 2: Component Library — detect components (button/input/card/nav/header/footer/table/tabs/modal) + specs + cropped screenshot (no triggered states; same-origin `:hover` only).
 - [x] F4: **visual overview** (`DesignOverview.tsx`) above export — stat tiles, palette+roles, color-usage bars, type scale, spacing bars, radii/shadows, live component previews, WCAG contrast meter, breakpoint ruler + container, motion (durations + easing curves). Usage frequencies kept in `DesignTokens`; inline SVG/CSS, light+dark verified; `core/easing.ts` tested.
 
 ## M5 — Simulator
