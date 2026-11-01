@@ -96,7 +96,7 @@ body {
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: #3f444b;
+  color: var(--text-2);
   cursor: pointer;
 }
 .icon-btn:hover {
@@ -200,7 +200,7 @@ body {
 }
 .btn:hover {
   background: var(--hover);
-  border-color: #cfcfc9;
+  border-color: var(--border-strong);
 }
 .btn-sm {
   flex: 0 0 auto;
@@ -353,7 +353,7 @@ body {
 .code-row code {
   font-family: var(--mono);
   font-size: 11px;
-  color: #3a3f45;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -547,7 +547,7 @@ body {
   font-family: var(--mono);
   font-size: 11px;
   line-height: 1.55;
-  color: #3a3f45;
+  color: var(--text);
   white-space: pre;
   tab-size: 2;
 }
