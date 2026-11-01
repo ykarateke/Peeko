@@ -179,8 +179,10 @@ export function ExportPanel({
           {busy && <p className="view-note">{busy}</p>}
           {err && <p className="view-note export-err">{err}</p>}
           <p className="view-note">
-            Full page scrolls and stitches the whole page (fixed/sticky elements are hidden during
-            capture; very long pages are capped). Captures stay in History for this session.
+            Full page opens a temporary full-width window (so the side panel doesn't narrow the
+            page), scrolls and stitches it — the page reloads there, so logged-in/interactive state
+            isn't kept. Fixed/sticky elements are hidden during capture; very long pages are capped.
+            Captures stay in History for this session.
           </p>
         </>
       )}

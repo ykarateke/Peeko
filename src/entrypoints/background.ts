@@ -100,11 +100,20 @@ async function injectContent(tabId: number): Promise<void> {
   }
 }
 
-/** Full-page screenshot via scroll-and-stitch; returns per-tile captures for the panel to compose. */
+/**
+ * Full-page screenshot via scroll-and-stitch. Captures in a **temporary full-width window**
+ * (not the current tab) so the side panel doesn't narrow the page — the page reloads there,
+ * so interactive/logged-in state is not preserved.
+ */
 async function captureFullPage(): Promise<{ metrics: PageMetrics; tiles: CaptureTile[] }> {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id || isRestrictedUrl(tab.url)) throw new RestrictedTabError();
-  const tabId = tab.id;
+  const [active] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (!active?.url || isRestrictedUrl(active.url)) throw new RestrictedTabError();
+  const originalWindowId = active.windowId;
+
+  const win = await browser.windows.create({ url: active.url, focused: true, state: 'maximized' });
+  const winId = win?.id;
+  const tabId = win?.tabs?.[0]?.id;
+  if (winId === undefined || tabId === undefined) throw new Error('Could not open capture window.');
 
   const send = async (msg: Msg): Promise<unknown> => {
     try {
@@ -116,21 +125,44 @@ async function captureFullPage(): Promise<{ metrics: PageMetrics; tiles: Capture
     }
   };
 
-  const metrics = (await send({ type: 'GET_PAGE_METRICS' })) as PageMetrics;
-  await send({ type: 'PREP_CAPTURE' });
-  const tiles: CaptureTile[] = [];
   try {
-    const offsets = tileOffsets(metrics.scrollHeight, metrics.innerHeight).slice(0, MAX_TILES);
-    for (const y of offsets) {
-      await send({ type: 'SCROLL_TO', y });
-      await delay(CAPTURE_DELAY);
-      const dataUrl = await browser.tabs.captureVisibleTab({ format: 'png' });
-      tiles.push({ y, dataUrl });
+    await waitForComplete(tabId);
+    await delay(900); // settle layout + initial lazy-load
+    const metrics = (await send({ type: 'GET_PAGE_METRICS' })) as PageMetrics;
+    await send({ type: 'PREP_CAPTURE' });
+    const tiles: CaptureTile[] = [];
+    try {
+      const offsets = tileOffsets(metrics.scrollHeight, metrics.innerHeight).slice(0, MAX_TILES);
+      for (const y of offsets) {
+        await send({ type: 'SCROLL_TO', y });
+        await delay(CAPTURE_DELAY);
+        tiles.push({ y, dataUrl: await browser.tabs.captureVisibleTab(winId, { format: 'png' }) });
+      }
+    } finally {
+      await send({ type: 'END_CAPTURE' }).catch(() => {});
     }
+    return { metrics, tiles };
   } finally {
-    await send({ type: 'END_CAPTURE' }).catch(() => {});
+    await browser.windows.remove(winId).catch(() => {});
+    await browser.windows.update(originalWindowId, { focused: true }).catch(() => {});
   }
-  return { metrics, tiles };
+}
+
+/** Resolve once a tab finishes loading (bounded wait). */
+function waitForComplete(tabId: number, timeout = 15000): Promise<void> {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const check = async () => {
+      try {
+        const t = await browser.tabs.get(tabId);
+        if (t.status === 'complete' || Date.now() - start > timeout) return resolve();
+      } catch {
+        return resolve();
+      }
+      setTimeout(check, 200);
+    };
+    check();
+  });
 }
 
 /** Open the active tab's URL in a device-sized popup window. */
