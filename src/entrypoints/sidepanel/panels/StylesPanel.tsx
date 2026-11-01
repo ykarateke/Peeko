@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { type FontToken } from '../../../core/messaging';
 import { formatColor, type ColorFormat } from '../../../core/color';
+import { useCopy } from '../useCopy';
 import {
   PaletteIcon,
   TypeIcon,
@@ -31,23 +32,13 @@ function isLight(hex: string): boolean {
 }
 
 export function StylesPanel({ colors, fonts }: { colors: string[]; fonts: FontToken[] }) {
-  const [copied, setCopied] = useState<string | null>(null);
+  const [copied, copy] = useCopy();
   const [picked, setPicked] = useState<string[]>([]);
   const [fmt, setFmt] = useState<ColorFormat>('hex');
 
   const all = [...picked, ...colors];
   const bigColors = all.slice(0, 10);
   const accentColors = all.slice(10);
-
-  function copy(text: string) {
-    navigator.clipboard?.writeText(text).then(
-      () => {
-        setCopied(text);
-        setTimeout(() => setCopied((c) => (c === text ? null : c)), 1100);
-      },
-      () => {},
-    );
-  }
 
   async function pickColor() {
     const Ctor = (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper;

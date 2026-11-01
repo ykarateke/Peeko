@@ -7,6 +7,8 @@ import { type Msg, RestrictedTabError } from '../core/messaging';
 // Panel -> page messages that the background forwards to the active tab.
 const RELAYED: ReadonlySet<Msg['type']> = new Set([
   'TOGGLE_INSPECT',
+  'STOP_INSPECT',
+  'GET_INSPECT_STATUS',
   'GET_PAGE_STYLES',
   'GET_PAGE_ASSETS',
 ]);
@@ -16,6 +18,11 @@ export default defineBackground(() => {
   browser.sidePanel
     ?.setPanelBehavior?.({ openPanelOnActionClick: true })
     .catch(() => {});
+
+  // Keyboard shortcut (Alt+Shift+I) -> toggle the inspector on the active tab.
+  browser.commands?.onCommand.addListener((command) => {
+    if (command === 'toggle-inspect') relayToActiveTab({ type: 'TOGGLE_INSPECT' }).catch(() => {});
+  });
 
   browser.runtime.onMessage.addListener((message: Msg, _sender, sendResponse) => {
     if (message.type === 'DOWNLOAD_IMAGE' || message.type === 'DOWNLOAD_FONT') {

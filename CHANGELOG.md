@@ -15,7 +15,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Real page extraction** (`core/extract.ts`): the Styles panel reads the active page's dominant color palette, font families (with weights) and element count via the content → background relay, with a toolbar rescan and loading/restricted states.
 - **Styles color tools:** Pick Color (native `EyeDropper`), Export Palette (CSS download), and a HEX/RGB/HSL format toggle that drives every copy and the export (`core/color.ts`).
 - **Assets panel:** extracts images, SVG (inline + file), icons, video, Lottie and fonts from the page (`core/assets.ts`); type filter with real counts, preview grid, copy URL, and single download to `Peeko/` (fonts to `Peeko/fonts/`) via the `downloads` API. **Bulk ZIP download** (JSZip, lazy-loaded) packages the current filter, foldered by type, with progress and a skipped-count for blocked assets.
-- **Testing:** vitest set up; `core/color.ts` and `toHex` covered (`pnpm test`).
+- **Inspect panel (F1):** click any element to read its `getComputedStyle` grouped into Typography / Color / Layout / Border & Effects (`core/inspect.ts`), with a Shadow-DOM hover/selection highlight (`core/highlight.ts`), one-click copy per value, color swatches, and Copy-all-as-CSS. Multi-select; ESC or toggle to exit; `Alt+Shift+I` keyboard shortcut.
+- **Shared `useCopy` hook** — Styles and Assets refactored onto it.
+- **Testing:** vitest; `core/color.ts`, `core/inspect.ts` and `toHex` covered (`pnpm test`, 16 tests).
 
 ### Planned
 See [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md) for the milestone plan (M1–M6) toward v1.

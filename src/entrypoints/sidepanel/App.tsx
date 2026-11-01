@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
-import { type Asset, type Msg, type PageStyles } from '../../core/messaging';
+import { type Asset, type ElementInfo, type Msg, type PageStyles } from '../../core/messaging';
 import { Toolbar } from './Toolbar';
 import { Tabs, type Tab } from './Tabs';
 import { StylesPanel } from './panels/StylesPanel';
 import { AssetsPanel } from './panels/AssetsPanel';
+import { InspectPanel } from './panels/InspectPanel';
 import { Placeholder } from './panels/Placeholder';
 
 type Load<T> =
@@ -15,6 +16,7 @@ type Load<T> =
 export function App() {
   const [tab, setTab] = useState<Tab>('Styles');
   const [inspecting, setInspecting] = useState(false);
+  const [selected, setSelected] = useState<ElementInfo | null>(null);
   const [styles, setStyles] = useState<Load<PageStyles>>({ state: 'loading' });
   const [assets, setAssets] = useState<Load<Asset[]>>({ state: 'loading' });
 
@@ -35,6 +37,31 @@ export function App() {
   }, [query]);
 
   useEffect(() => refresh(), [refresh]);
+
+  // Content -> panel: selected element + inspect-stopped (ESC / toggle).
+  useEffect(() => {
+    const onMsg = (m: Msg) => {
+      if (m.type === 'ELEMENT_CLICKED') {
+        setSelected(m.data);
+        setInspecting(true);
+      } else if (m.type === 'INSPECTOR_STOPPED') {
+        setInspecting(false);
+      }
+    };
+    browser.runtime.onMessage.addListener(onMsg);
+    return () => browser.runtime.onMessage.removeListener(onMsg);
+  }, []);
+
+  // Sync the toggle when the Inspect tab opens (e.g. started via keyboard).
+  useEffect(() => {
+    if (tab !== 'Inspect') return;
+    browser.runtime
+      .sendMessage({ type: 'GET_INSPECT_STATUS' })
+      .then((res: { ok: boolean; data?: { inspecting: boolean } }) => {
+        if (res?.ok && res.data) setInspecting(res.data.inspecting);
+      })
+      .catch(() => {});
+  }, [tab]);
 
   function toggleInspect() {
     const next = !inspecting;
@@ -64,13 +91,15 @@ export function App() {
             {(d) => <AssetsPanel assets={d} />}
           </Loaded>
         )}
-        {tab === 'Inspect' && <Placeholder title="Inspect" />}
+        {tab === 'Inspect' && (
+          <InspectPanel info={selected} inspecting={inspecting} onToggle={toggleInspect} />
+        )}
         {tab === 'Design' && <Placeholder title="Design System" />}
       </main>
 
       <footer className="footer">
         <span>{count !== null ? `${count} elements` : '—'}</span>
-        <span>Ctrl+Shift+C to inspect</span>
+        <span>Alt+Shift+I to inspect</span>
       </footer>
     </div>
   );

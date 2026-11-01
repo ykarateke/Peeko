@@ -19,10 +19,11 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 - [x] F2: dominant-palette extraction (by frequency).
 - [x] F2: color sampling via `EyeDropper`. _(overlay fallback for unsupported browsers: later)_
 - [x] F2: HEX/RGB/HSL conversion (`core/color.ts`, unit-tested) + copy + Export Palette (CSS).
-- [x] Testing: vitest set up; `core/color.ts` + `toHex` covered (`pnpm test`, 12 tests).
-- [ ] F1: overlay hover/selection layer (Shadow DOM isolated).
-- [ ] F1: `getComputedStyle` reader → `ElementInfo` grouped (typography/color/layout/border-effects).
-- [ ] F1: panel renders groups; one-click copy per value.
+- [x] Testing: vitest set up; `core/color.ts` + `core/inspect.ts` + `toHex` covered (`pnpm test`, 16 tests).
+- [x] F1: hover/selection highlight (Shadow DOM isolated, `core/highlight.ts`); crosshair; ESC/toggle to exit; multi-select.
+- [x] F1: `getComputedStyle` reader → `ElementInfo` grouped + selector/box (`core/inspect.ts`, `groupComputed` unit-tested).
+- [x] F1: `InspectPanel` renders groups with one-click copy (+ color swatch, Copy-all-as-CSS); shared `useCopy` hook (Styles/Assets refactored onto it).
+- [x] F1: keyboard shortcut `Alt+Shift+I` (manifest `commands` → background → relay).
 
 ## M3 — Assets
 

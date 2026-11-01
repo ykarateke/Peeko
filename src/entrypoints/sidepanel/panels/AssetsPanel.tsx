@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { browser } from 'wxt/browser';
 import { type Asset, type AssetType } from '../../../core/messaging';
+import { useCopy } from '../useCopy';
 import { DownloadIcon } from '../icons';
 
 type Filter = 'all' | AssetType;
@@ -27,7 +28,7 @@ const THUMBABLE: ReadonlySet<AssetType> = new Set(['image', 'svg', 'icon']);
 
 export function AssetsPanel({ assets }: { assets: Asset[] }) {
   const [filter, setFilter] = useState<Filter>('all');
-  const [copied, setCopied] = useState<string | null>(null);
+  const [copied, copyUrl] = useCopy();
   const [zip, setZip] = useState<{ done: number; total: number } | null>(null);
   const [zipMsg, setZipMsg] = useState<string | null>(null);
 
@@ -35,16 +36,6 @@ export function AssetsPanel({ assets }: { assets: Asset[] }) {
     ([, n]) => n > 0,
   );
   const shown = filter === 'all' ? assets : assets.filter((a) => a.type === filter);
-
-  function copyUrl(url: string) {
-    navigator.clipboard?.writeText(url).then(
-      () => {
-        setCopied(url);
-        setTimeout(() => setCopied((c) => (c === url ? null : c)), 1100);
-      },
-      () => {},
-    );
-  }
 
   function download(a: Asset) {
     if (a.url.startsWith('data:')) {

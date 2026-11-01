@@ -1,6 +1,8 @@
 // Single source of truth for all inter-context messages. See docs/engineering/API_SPEC.md.
 
 export interface ElementInfo {
+  selector: string;
+  box: string; // "width × height"
   typography: Record<string, string>;
   color: Record<string, string>;
   layout: Record<string, string>;

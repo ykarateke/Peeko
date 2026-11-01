@@ -493,6 +493,97 @@ body {
   border-color: var(--accent);
 }
 
+/* ---------- Inspect ---------- */
+.inspect-toggle {
+  width: 100%;
+  margin-bottom: 12px;
+}
+.inspect-toggle.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.inspect-toggle.is-on:hover {
+  background: #3f63e0;
+}
+
+.inspect-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.inspect-selector {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inspect-box {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+.prop-group {
+  margin-bottom: 14px;
+}
+.prop-group-title {
+  margin-bottom: 7px;
+}
+.prop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+}
+.prop-row:hover {
+  border-color: var(--border-strong);
+  background: #fafafa;
+}
+.prop-row.is-copied {
+  border-color: var(--accent);
+}
+.prop-key {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-2);
+}
+.prop-val {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prop-swatch {
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+}
+
 /* ---------- Placeholder ---------- */
 .placeholder {
   display: grid;

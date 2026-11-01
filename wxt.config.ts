@@ -11,5 +11,11 @@ export default defineConfig({
     action: {},
     permissions: ['downloads', 'activeTab', 'scripting', 'sidePanel', 'storage', 'tabs'],
     host_permissions: ['<all_urls>'],
+    commands: {
+      'toggle-inspect': {
+        suggested_key: { default: 'Alt+Shift+I' },
+        description: 'Toggle Peeko element inspector',
+      },
+    },
   },
 });
