@@ -19,7 +19,6 @@ export function extractTokens(doc: Document): DesignTokens {
   const radii = new Set<string>();
   const shadows = new Set<string>();
   const gradients = new Set<string>();
-  const containers = new Map<string, number>();
   const durations = new Set<string>();
   const easings = new Set<string>();
 
@@ -64,23 +63,8 @@ export function extractTokens(doc: Document): DesignTokens {
     if (cs.boxShadow && cs.boxShadow !== 'none') shadows.add(cs.boxShadow);
     if (cs.backgroundImage.includes('gradient(')) gradients.add(cs.backgroundImage);
 
-    const mw = pxNum(cs.maxWidth);
-    if (mw !== null && mw >= 320 && mw <= 2000) containers.set(cs.maxWidth, (containers.get(cs.maxWidth) ?? 0) + 1);
-
-    let hasDuration = false;
-    for (const d of cs.transitionDuration.split(',')) {
-      const v = d.trim();
-      if (v && v !== '0s') {
-        durations.add(v);
-        hasDuration = true;
-      }
-    }
-    if (hasDuration) {
-      for (const e of cs.transitionTimingFunction.split(',')) {
-        const v = e.trim();
-        if (v) easings.add(v);
-      }
-    }
+    collectMotion(cs.transitionDuration, cs.transitionTimingFunction, durations, easings);
+    collectMotion(cs.animationDuration, cs.animationTimingFunction, durations, easings);
   }
 
   const colors = [...colorCount.entries()]
@@ -102,11 +86,10 @@ export function extractTokens(doc: Document): DesignTokens {
     shadows: [...shadows].slice(0, 10),
     gradients: [...gradients].slice(0, 10),
     breakpoints: extractBreakpoints(doc),
-    containers: [...containers.keys()]
-      .sort((a, b) => (pxNum(a) ?? 0) - (pxNum(b) ?? 0))
-      .slice(0, 6),
+    containers: detectContainers(doc),
     durations: [...durations].sort((a, b) => msOf(a) - msOf(b)).slice(0, 8),
     easings: [...easings].slice(0, 8),
+    animations: extractKeyframes(doc),
     headings: detectHeadings(doc),
     body: detectBody(doc),
     bodyColor: doc.body ? toHex(getComputedStyle(doc.body).color) : null,
@@ -211,6 +194,65 @@ function synthBorder(cs: CSSStyleDeclaration): string {
   if (style === 'none' || w === '0px') return '';
   const hex = toHex(color) ?? color;
   return `${w} ${style} ${hex}`;
+}
+
+function collectMotion(
+  durationCss: string,
+  timingCss: string,
+  durations: Set<string>,
+  easings: Set<string>,
+): void {
+  let hasDuration = false;
+  for (const d of durationCss.split(',')) {
+    const v = d.trim();
+    if (v && v !== '0s') {
+      durations.add(v);
+      hasDuration = true;
+    }
+  }
+  if (hasDuration) {
+    for (const e of timingCss.split(',')) {
+      const v = e.trim();
+      if (v) easings.add(v);
+    }
+  }
+}
+
+/** Content container max-widths — prefer real containers, fall back to any bounded max-width. */
+function detectContainers(doc: Document): string[] {
+  const vals = new Map<string, number>();
+  const add = (mw: string) => {
+    const n = pxNum(mw);
+    if (n !== null && n >= 320 && n <= 2000) vals.set(mw, (vals.get(mw) ?? 0) + 1);
+  };
+  doc
+    .querySelectorAll('main, article, [class*="container" i], [class*="wrapper" i], [class*="content" i]')
+    .forEach((el) => add(getComputedStyle(el).maxWidth));
+  if (vals.size === 0) {
+    Array.from(doc.querySelectorAll<HTMLElement>('body *'))
+      .slice(0, 2000)
+      .forEach((el) => add(getComputedStyle(el).maxWidth));
+  }
+  return [...vals.keys()].sort((a, b) => (pxNum(a) ?? 0) - (pxNum(b) ?? 0)).slice(0, 6);
+}
+
+/** @keyframes animation names from same-origin stylesheets. */
+function extractKeyframes(doc: Document): string[] {
+  const names = new Set<string>();
+  const walk = (rules: CSSRuleList) => {
+    for (const rule of Array.from(rules)) {
+      if (rule instanceof CSSKeyframesRule) names.add(rule.name);
+      else if (rule instanceof CSSMediaRule) walk(rule.cssRules);
+    }
+  };
+  for (const sheet of Array.from(doc.styleSheets)) {
+    try {
+      walk(sheet.cssRules);
+    } catch {
+      continue; // cross-origin
+    }
+  }
+  return [...names].slice(0, 12);
 }
 
 function extractBreakpoints(doc: Document): string[] {

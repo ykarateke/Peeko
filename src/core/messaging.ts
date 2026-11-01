@@ -45,9 +45,10 @@ export interface DesignTokens {
   shadows: string[];
   gradients: string[];
   breakpoints: string[]; // px, ascending
-  containers: string[]; // common max-width values (px), ascending
-  durations: string[]; // transition durations
-  easings: string[]; // transition timing functions
+  containers: string[]; // content container max-widths (px), ascending
+  durations: string[]; // transition/animation durations
+  easings: string[]; // transition/animation timing functions
+  animations: string[]; // @keyframes names
   headings: Record<string, TypeStyle>; // 'h1'..'h6' (present ones)
   body: TypeStyle | null;
   bodyColor: string | null; // hex

@@ -24,6 +24,7 @@ const t: DesignTokens = {
   containers: ['1200px'],
   durations: ['150ms', '300ms'],
   easings: ['ease-in-out', 'cubic-bezier(0.4, 0, 0.2, 1)'],
+  animations: ['fade-in', 'spin'],
   headings: {
     h1: { size: '32px', weight: '700', lineHeight: '40px' },
     h2: { size: '24px', weight: '600', lineHeight: '32px' },
@@ -108,6 +109,7 @@ describe('exportAgentBrief', () => {
     expect(brief).toContain('## Motion');
     expect(brief).toContain('150ms');
     expect(brief).toContain('cubic-bezier(0.4, 0, 0.2, 1)');
+    expect(brief).toContain('fade-in');
   });
 });
 

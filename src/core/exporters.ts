@@ -103,6 +103,7 @@ export function exportJson(t: DesignTokens): string {
         components: t.components,
         baseUnit: t.baseUnit,
         easings: t.easings,
+        animations: t.animations,
       },
     },
   };
@@ -132,10 +133,11 @@ export function exportMarkdown(t: DesignTokens): string {
   L.push('## Spacing', '', t.spacing.length ? `${list(t.spacing)}${baseNote(t)}` : '_none_', '');
   if (t.breakpoints.length) L.push('## Breakpoints', '', list(t.breakpoints), '');
   if (t.containers.length) L.push('## Container max-width', '', list(t.containers), '');
-  if (t.durations.length || t.easings.length) {
+  if (t.durations.length || t.easings.length || t.animations.length) {
     L.push('## Motion', '');
     if (t.durations.length) L.push(`- Durations: ${list(t.durations)}`);
     if (t.easings.length) L.push(`- Easings: ${list(t.easings)}`);
+    if (t.animations.length) L.push(`- Animations (@keyframes): ${list(t.animations)}`);
     L.push('');
   }
   L.push(...componentSections(t));
@@ -200,10 +202,11 @@ export function exportAgentBrief(t: DesignTokens): string {
   if (t.containers.length) L.push(`- **Container max-width:** ${list(t.containers)} — cap page content at the largest.`);
   L.push('');
 
-  if (t.durations.length || t.easings.length) {
+  if (t.durations.length || t.easings.length || t.animations.length) {
     L.push('## Motion', '');
     if (t.durations.length) L.push(`- **Durations:** ${list(t.durations)}`);
     if (t.easings.length) L.push(`- **Easings:** ${list(t.easings)}`);
+    if (t.animations.length) L.push(`- **Animations (@keyframes):** ${list(t.animations)}`);
     L.push('- Reuse these for transitions/animations so motion feels consistent.', '');
   }
 
