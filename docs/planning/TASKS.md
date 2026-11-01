@@ -51,7 +51,7 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 - [x] F6: drag-to-measure ruler + crosshair guides (Shadow-DOM overlay `core/ruler.ts`); ESC/toggle exit; mutually exclusive with inspect.
 - [x] F7: screenshot — visible area (`captureVisibleTab`) + selected-element crop (canvas, `rect×dpr`). _(region drag: next)_
 - [x] F8: Settings UI + `core/prefs.ts` (`storage.local`, see [`../engineering/DATABASE.md`](../engineering/DATABASE.md)) — theme (incl. **dark mode**), default color format, download folder, default export; wired into panels.
-- [ ] Release: store assets + icons, privacy forms (see [`../operations/DEPLOYMENT.md`](../operations/DEPLOYMENT.md)).
+- [~] Release: **icons done** + zip packages (`pnpm zip`/`zip:firefox`, v0.1.0); store screenshots + descriptions + privacy forms still needed (see [`../operations/DEPLOYMENT.md`](../operations/DEPLOYMENT.md)).
 - [ ] Full manual smoke on Chrome + Firefox; Network zero-request verification.
 
 ## Cross-cutting (any time)

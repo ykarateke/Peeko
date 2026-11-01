@@ -8,7 +8,14 @@ export default defineConfig({
     name: 'Peeko',
     description:
       'Local-first design inspection & asset extraction. Zero backend, zero telemetry.',
-    action: {},
+    action: {
+      default_icon: {
+        '16': 'icon/16.png',
+        '32': 'icon/32.png',
+        '48': 'icon/48.png',
+        '128': 'icon/128.png',
+      },
+    },
     permissions: ['downloads', 'activeTab', 'scripting', 'sidePanel', 'storage', 'tabs'],
     host_permissions: ['<all_urls>'],
     commands: {

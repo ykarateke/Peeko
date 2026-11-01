@@ -9,17 +9,22 @@ Peeko ships as a browser extension to the Chrome Web Store and Firefox Add-ons (
 | `pnpm build` | `.output/chrome-mv3` |
 | `pnpm build:firefox` | `.output/firefox-mv3` |
 
-WXT generates the per-target manifest (MV3). Packaging to a distributable zip is done with `wxt zip` / `wxt zip:firefox` (produces the upload artifacts).
+WXT generates the per-target manifest (MV3). `pnpm zip` / `pnpm zip:firefox` produce the upload artifacts in `.output/`:
+`peeko-<version>-chrome.zip`, `peeko-<version>-firefox.zip`, and `peeko-<version>-sources.zip` (source bundle for AMO review).
+
+## Icons
+
+The marque lives in `public/icon/` (`16/32/48/96/128/512.png` + `icon.svg`). WXT auto-populates the manifest `icons`; `action.default_icon` is set in `wxt.config.ts`. To change the mark, edit `icon.svg` and re-rasterize the PNGs (hand-authored SVG — see provenance in [`../../CHANGELOG.md`](../../CHANGELOG.md)).
 
 ## Pre-release checklist
 
-- [ ] Both builds green; `pnpm lint`, `pnpm typecheck`, `pnpm test` pass (see [`../engineering/TESTING.md`](../engineering/TESTING.md)).
+- [x] Both builds green; `pnpm typecheck` + `pnpm test` pass (see [`../engineering/TESTING.md`](../engineering/TESTING.md)). _(lint config: TODO)_
 - [ ] Manual smoke checklist passed on Chrome **and** Firefox.
 - [ ] DevTools Network confirms zero extension-initiated requests.
-- [ ] Version bumped and [`../../CHANGELOG.md`](../../CHANGELOG.md) updated.
-- [ ] `LICENSE` (MIT) present in the repo.
+- [x] Version bumped (0.1.0) and [`../../CHANGELOG.md`](../../CHANGELOG.md) updated.
+- [x] `LICENSE` (MIT) present in the repo.
 - [ ] README justifies `<all_urls>` and download permissions (reviewers check this).
-- [ ] Store listing assets ready: icons, screenshots, description, privacy summary.
+- [x] Icons ready. [ ] Screenshots, store description, privacy summary still needed.
 
 ## Chrome Web Store
 

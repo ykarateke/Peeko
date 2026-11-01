@@ -4,9 +4,13 @@ All notable changes to Peeko are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2026-11-01
+
+First packaged release (F1–F8 complete). Store/AMO packages: `peeko-0.1.0-chrome.zip`,
+`peeko-0.1.0-firefox.zip`, `peeko-0.1.0-sources.zip`.
 
 ### Added
+- **Store icon** — Peeko mark (a lowercase "p" whose counter reads as a lens), hand-authored SVG, rasterized to `public/icon/{16,32,48,96,128,512}.png`; wired into the manifest `icons` + `action.default_icon`. Provenance: authored directly, no model/backend.
 - Project documentation set (product, architecture, engineering, operations, planning).
 - Product name finalized as **Peeko** (previously the working name "PageLens").
 - **MIT** `LICENSE` (ADR-009).
