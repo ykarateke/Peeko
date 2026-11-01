@@ -12,7 +12,7 @@ Peeko lives in the browser **side panel** (Chrome `sidePanel` / Firefox `sidebar
 
 ### 🎨 Styles — colors & typography at a glance
 
-![Styles tab on google.com](docs/images/1.png)
+![Styles tab on google.com](docs/images/1.webp)
 
 The **Styles** tab extracts the page's real visual language the moment you open it:
 
@@ -22,23 +22,23 @@ The **Styles** tab extracts the page's real visual language the moment you open 
 
 It works on anything — here's the same tab on a dense, real-world app:
 
-![Styles tab on reddit.com](docs/images/2.png)
+![Styles tab on reddit.com](docs/images/2.webp)
 
 ### 🗂️ Assets — extract & download everything
 
-![Assets tab with filters and grid](docs/images/3.png)
+![Assets tab with filters and grid](docs/images/3.webp)
 
 The **Assets** tab scans the page for **images, SVG, icons, video, Lottie and fonts**, filterable by type with live counts. Each asset has a preview (transparency shown on a checkerboard), its dimensions, **copy URL** and **single download** (into a `Peeko/` folder, fonts under `Peeko/fonts/`). **Download ZIP** bundles the whole current filter at once (cross-origin assets are fetched where allowed and the rest are skipped gracefully).
 
 ### 🔍 Inspect — read any element's computed styles
 
-![Inspect tab with a selected element](docs/images/4.png)
+![Inspect tab with a selected element](docs/images/4.webp)
 
 Click **Inspect**, hover the page (an isolated Shadow-DOM highlight tracks the element with a size label), and pick anything. Peeko reads its `getComputedStyle` grouped into **Typography · Color · Layout · Border & Effects**, each value one click to copy — plus **Copy CSS** for the whole rule and **PNG** to screenshot just that element. Keyboard shortcut: **Alt + Shift + I**. Restricted pages (`chrome://`, etc.) are handled with a polite message instead of failing.
 
 ### 🧩 Design — a full Design System Inspection tool
 
-![Design System tab](docs/images/5.png)
+![Design System tab](docs/images/5.webp)
 
 The **Design** tab reverse-engineers the site's design system, not just a color list:
 
@@ -50,7 +50,7 @@ The **Design** tab reverse-engineers the site's design system, not just a color 
 
 ### 📸 Export — screenshots & a faithful page snapshot
 
-![Export tab](docs/images/6.png)
+![Export tab](docs/images/6.webp)
 
 The **Export** tab is an independent capture module:
 
