@@ -1,5 +1,7 @@
-import type { DesignTokens } from './messaging';
+import type { DesignTokens, TypeStyle } from './messaging';
 import { toHex, primaryFamily, weightOf } from './extract';
+
+const NOISE = new Set(['', 'none', 'normal', 'auto', 'rgba(0, 0, 0, 0)', 'transparent', '0px']);
 
 // shortcut: scans up to SCAN_CAP elements; same-origin stylesheets only for breakpoints (CORS blocks the rest).
 const SCAN_CAP = 4000;
@@ -65,6 +67,8 @@ export function extractTokens(doc: Document): DesignTokens {
     .slice(0, 24)
     .map(([hex]) => hex);
 
+  const spacingPx = [...spacing].sort((a, b) => a - b).slice(0, 14).map((n) => `${n}px`);
+
   return {
     colors,
     roles: detectRoles(doc),
@@ -72,11 +76,16 @@ export function extractTokens(doc: Document): DesignTokens {
     fontSizes: [...sizes].sort((a, b) => a - b).map((n) => `${n}px`),
     fontWeights: [...weights].sort((a, b) => a - b),
     lineHeights: [...lineHeights].slice(0, 10),
-    spacing: [...spacing].sort((a, b) => a - b).slice(0, 14).map((n) => `${n}px`),
+    spacing: spacingPx,
     radii: [...radii].slice(0, 10),
     shadows: [...shadows].slice(0, 10),
     gradients: [...gradients].slice(0, 10),
     breakpoints: extractBreakpoints(doc),
+    headings: detectHeadings(doc),
+    body: detectBody(doc),
+    bodyColor: doc.body ? toHex(getComputedStyle(doc.body).color) : null,
+    components: detectComponents(doc),
+    baseUnit: spacingPx[0] ?? null,
     meta: {
       url: location.href,
       title: doc.title,
@@ -105,6 +114,77 @@ function detectRoles(doc: Document): Record<string, string> {
   const button = doc.querySelector('button, .btn, [type="submit"]');
   if (button) set('accent', getComputedStyle(button).backgroundColor);
   return roles;
+}
+
+function detectHeadings(doc: Document): Record<string, TypeStyle> {
+  const out: Record<string, TypeStyle> = {};
+  for (const tag of ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']) {
+    const el = doc.querySelector(tag);
+    if (el) out[tag] = typeStyle(el);
+  }
+  return out;
+}
+
+function detectBody(doc: Document): TypeStyle | null {
+  return doc.body ? typeStyle(doc.body) : null;
+}
+
+function typeStyle(el: Element): TypeStyle {
+  const cs = getComputedStyle(el);
+  return { size: cs.fontSize, weight: cs.fontWeight, lineHeight: cs.lineHeight };
+}
+
+function detectComponents(doc: Document): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {};
+  const btn = doc.querySelector('button, .btn, [type="submit"], [role="button"]');
+  if (btn)
+    out.button = cleanStyle(btn, [
+      'background-color',
+      'color',
+      'border',
+      'border-radius',
+      'padding',
+      'font-size',
+      'font-weight',
+    ]);
+  const link = doc.querySelector('a[href]');
+  if (link) out.link = cleanStyle(link, ['color', 'text-decoration-line', 'font-weight']);
+  const input = doc.querySelector('input:not([type="hidden"]), textarea, select');
+  if (input)
+    out.input = cleanStyle(input, [
+      'background-color',
+      'color',
+      'border',
+      'border-radius',
+      'padding',
+      'font-size',
+    ]);
+  return out;
+}
+
+/** Read selected computed properties, dropping noise and hexifying color values. */
+function cleanStyle(el: Element, props: string[]): Record<string, string> {
+  const cs = getComputedStyle(el);
+  const out: Record<string, string> = {};
+  for (const p of props) {
+    let v =
+      p === 'border'
+        ? synthBorder(cs)
+        : cs.getPropertyValue(p).trim();
+    if (!v || NOISE.has(v)) continue;
+    if ((p === 'color' || p === 'background-color') && v.startsWith('rgb')) v = toHex(v) ?? v;
+    out[p] = v;
+  }
+  return out;
+}
+
+function synthBorder(cs: CSSStyleDeclaration): string {
+  const w = cs.getPropertyValue('border-top-width');
+  const style = cs.getPropertyValue('border-top-style');
+  const color = cs.getPropertyValue('border-top-color');
+  if (style === 'none' || w === '0px') return '';
+  const hex = toHex(color) ?? color;
+  return `${w} ${style} ${hex}`;
 }
 
 function extractBreakpoints(doc: Document): string[] {

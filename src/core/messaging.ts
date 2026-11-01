@@ -26,6 +26,12 @@ export interface PageStyles {
   elementCount: number;
 }
 
+export interface TypeStyle {
+  size: string;
+  weight: string;
+  lineHeight: string;
+}
+
 /** Design tokens extracted from the active page (Design panel). */
 export interface DesignTokens {
   colors: string[]; // hex, frequency-sorted
@@ -39,6 +45,11 @@ export interface DesignTokens {
   shadows: string[];
   gradients: string[];
   breakpoints: string[]; // px, ascending
+  headings: Record<string, TypeStyle>; // 'h1'..'h6' (present ones)
+  body: TypeStyle | null;
+  bodyColor: string | null; // hex
+  components: Record<string, Record<string, string>>; // 'button' | 'link' | 'input' -> prop:value
+  baseUnit: string | null; // smallest spacing step
   meta: { url: string; title: string; elementCount: number; generatedAt: string };
 }
 

@@ -21,6 +21,17 @@ const t: DesignTokens = {
   shadows: ['rgba(0, 0, 0, 0.1) 0px 1px 2px 0px'],
   gradients: [],
   breakpoints: ['640px', '1024px'],
+  headings: {
+    h1: { size: '32px', weight: '700', lineHeight: '40px' },
+    h2: { size: '24px', weight: '600', lineHeight: '32px' },
+  },
+  body: { size: '16px', weight: '400', lineHeight: '24px' },
+  bodyColor: '#111111',
+  components: {
+    button: { 'background-color': '#4b74ff', color: '#ffffff', 'border-radius': '8px', padding: '8px 16px' },
+    link: { color: '#4b74ff', 'text-decoration-line': 'underline' },
+  },
+  baseUnit: '4px',
   meta: { url: 'https://x.test', title: 'X', elementCount: 10, generatedAt: '2026-01-01T00:00:00Z' },
 };
 
@@ -72,11 +83,40 @@ describe('exportMarkdown', () => {
 
 describe('exportAgentBrief', () => {
   const brief = exportAgentBrief(t);
-  it('includes analysis sections and an embedded CSS block', () => {
-    expect(brief).toContain('# Design System Analysis');
-    expect(brief).toContain('## Semantic color roles');
-    expect(brief).toContain('## Replication notes');
+  it('includes the comprehensive report sections', () => {
+    expect(brief).toContain('## Design principles');
+    expect(brief).toContain('## Color system');
+    expect(brief).toContain('### Headings');
+    expect(brief).toContain('## Components');
+    expect(brief).toContain('### Button');
+    expect(brief).toContain('## Rules for agents');
+    expect(brief).toContain("Don't");
+  });
+  it('reports WCAG contrast for text on background', () => {
+    expect(brief).toMatch(/\d+\.\d+:1/);
+    expect(brief).toMatch(/AAA|AA|Fail/);
+  });
+  it('embeds a copy-pastable CSS token block', () => {
     expect(brief).toContain('```css');
     expect(brief).toContain('--color-1: #4b74ff;');
+  });
+});
+
+describe('exportMarkdown (enriched)', () => {
+  const md = exportMarkdown(t);
+  it('includes headings table and components', () => {
+    expect(md).toContain('### Headings');
+    expect(md).toContain('| h1 | 32px | 700 | 40px |');
+    expect(md).toContain('### Button');
+  });
+});
+
+describe('exportJson ($extensions)', () => {
+  it('carries semantic data under $extensions', () => {
+    const parsed = JSON.parse(exportJson(t)) as {
+      $extensions: { 'com.peeko': { baseUnit: string; components: Record<string, unknown> } };
+    };
+    expect(parsed.$extensions['com.peeko'].baseUnit).toBe('4px');
+    expect(parsed.$extensions['com.peeko'].components).toHaveProperty('button');
   });
 });

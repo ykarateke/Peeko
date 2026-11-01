@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatColor, parseHex } from './color';
+import { formatColor, parseHex, contrastRatio, wcagLevel } from './color';
 import { toHex } from './extract';
 
 describe('parseHex', () => {
@@ -14,6 +14,20 @@ describe('formatColor', () => {
   it('hsl white', () => expect(formatColor('#ffffff', 'hsl')).toBe('hsl(0, 0%, 100%)'));
   it('hsl red', () => expect(formatColor('#ff0000', 'hsl')).toBe('hsl(0, 100%, 50%)'));
   it('returns input unchanged when unparseable', () => expect(formatColor('xyz', 'rgb')).toBe('xyz'));
+});
+
+describe('contrastRatio / wcagLevel', () => {
+  it('black on white is 21:1 (AAA)', () => {
+    const r = contrastRatio('#000000', '#ffffff');
+    expect(r).toBeCloseTo(21, 0);
+    expect(wcagLevel(r!)).toBe('AAA');
+  });
+  it('same color is 1:1 (Fail)', () => {
+    const r = contrastRatio('#777777', '#777777');
+    expect(r).toBeCloseTo(1, 1);
+    expect(wcagLevel(r!)).toBe('Fail');
+  });
+  it('null for unparseable', () => expect(contrastRatio('x', '#fff')).toBeNull());
 });
 
 describe('toHex (from computed rgb strings)', () => {

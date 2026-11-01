@@ -21,6 +21,31 @@ export function parseHex(hex: string): [number, number, number] | null {
   return [r, g, b].some((n) => Number.isNaN(n)) ? null : [r, g, b];
 }
 
+export function relativeLuminance(hex: string): number | null {
+  const rgb = parseHex(hex);
+  if (!rgb) return null;
+  const lin = rgb.map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+}
+
+/** WCAG contrast ratio between two hex colors (1–21), or null if unparseable. */
+export function contrastRatio(a: string, b: string): number | null {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  if (la === null || lb === null) return null;
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+export function wcagLevel(ratio: number): string {
+  if (ratio >= 7) return 'AAA';
+  if (ratio >= 4.5) return 'AA';
+  if (ratio >= 3) return 'AA Large';
+  return 'Fail';
+}
+
 function rgbToHsl(r: number, g: number, b: number): string {
   const rn = r / 255;
   const gn = g / 255;

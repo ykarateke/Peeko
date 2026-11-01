@@ -23,6 +23,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Screenshot (F7):** capture visible area (`captureVisibleTab`) to PNG, plus selected-element crop from the Inspect panel (canvas, `rect×dpr`).
 - **Settings + dark mode (F8):** `core/prefs.ts` (`storage.local`) — theme (system/light/**dark**), default color format, download folder, default export format — surfaced in a Settings view and wired into the panels; full dark theme via CSS variables.
 - Toolbar now drives Simulator / Screenshot / Settings as views (the 4 tabs stay); collapse closes the panel.
+- **Design output upgraded to a full design reference** (following the DESIGN.md convention): token extraction now also reads heading scale (h1–h6), body/link styles and component specs (button/link/input) + base spacing unit (`core/tokens.ts`); the **AI Agent Brief** is now a comprehensive report — overview, inferred design principles, color system with WCAG contrast, typography + headings table, spacing & breakpoints, component specs, and an explicit **Do/Don't rules for agents** section, plus the copy-pastable CSS block. Markdown export enriched to match; JSON carries the semantic data under DTCG `$extensions`.
 - **Testing:** vitest; `core/color.ts`, `core/inspect.ts`, `core/exporters.ts`, `core/prefs.ts` and `toHex` covered (`pnpm test`, 27 tests).
 
 ### Planned
