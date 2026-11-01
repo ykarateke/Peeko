@@ -38,6 +38,7 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 - [x] F4: pure exporters — CSS, SCSS, JSON (DTCG-style), Tailwind v4 `@theme`, Markdown + **AI Agent Brief** (`core/exporters.ts`).
 - [x] F4: exporter unit tests (parse/validate — `exporters.test.ts`, 8 cases).
 - [x] F4: `DesignPanel` — format selector, live preview, copy + download (per-format filename); shared `download.ts` helper (Styles/Assets refactored onto it).
+- [x] F4: **visual overview** (`DesignOverview.tsx`) above export — stat tiles, palette+roles, color-usage bars, type scale, spacing bars, radii/shadows, live component previews, WCAG contrast meter, breakpoint ruler + container, motion (durations + easing curves). Usage frequencies kept in `DesignTokens`; inline SVG/CSS, light+dark verified; `core/easing.ts` tested.
 
 ## M5 — Simulator
 

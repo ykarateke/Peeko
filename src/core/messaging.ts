@@ -32,6 +32,11 @@ export interface TypeStyle {
   lineHeight: string;
 }
 
+export interface Count {
+  value: string;
+  count: number;
+}
+
 /** Design tokens extracted from the active page (Design panel). */
 export interface DesignTokens {
   colors: string[]; // hex, frequency-sorted
@@ -54,6 +59,7 @@ export interface DesignTokens {
   bodyColor: string | null; // hex
   components: Record<string, Record<string, string>>; // 'button' | 'link' | 'input' -> prop:value
   baseUnit: string | null; // smallest spacing step
+  usage: { colors: Count[]; fontSizes: Count[]; spacing: Count[] }; // value + frequency, for charts
   meta: { url: string; title: string; elementCount: number; generatedAt: string };
 }
 

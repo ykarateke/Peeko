@@ -12,10 +12,10 @@ export function extractTokens(doc: Document): DesignTokens {
 
   const colorCount = new Map<string, number>();
   const families = new Set<string>();
-  const sizes = new Set<number>();
+  const sizes = new Map<number, number>();
   const weights = new Set<number>();
   const lineHeights = new Set<string>();
-  const spacing = new Set<number>();
+  const spacing = new Map<number, number>();
   const radii = new Set<string>();
   const shadows = new Set<string>();
   const gradients = new Set<string>();
@@ -28,7 +28,7 @@ export function extractTokens(doc: Document): DesignTokens {
   };
   const addSpacing = (v: string) => {
     const n = pxNum(v);
-    if (n !== null && n > 0 && n <= 256) spacing.add(n);
+    if (n !== null && n > 0 && n <= 256) spacing.set(n, (spacing.get(n) ?? 0) + 1);
   };
 
   for (const el of els) {
@@ -39,7 +39,7 @@ export function extractTokens(doc: Document): DesignTokens {
     const fam = primaryFamily(cs.fontFamily);
     if (fam) families.add(fam);
     const fs = pxNum(cs.fontSize);
-    if (fs !== null) sizes.add(fs);
+    if (fs !== null) sizes.set(fs, (sizes.get(fs) ?? 0) + 1);
     const w = weightOf(cs.fontWeight);
     if (w !== null) weights.add(w);
     if (cs.lineHeight && cs.lineHeight !== 'normal') lineHeights.add(cs.lineHeight);
@@ -67,24 +67,29 @@ export function extractTokens(doc: Document): DesignTokens {
     collectMotion(cs.animationDuration, cs.animationTimingFunction, durations, easings);
   }
 
-  const colors = [...colorCount.entries()]
+  const colorUsage = [...colorCount.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 24)
-    .map(([hex]) => hex);
+    .map(([value, count]) => ({ value, count }));
+  const colors = colorUsage.map((c) => c.value);
 
-  const spacingPx = [...spacing]
-    .sort((a, b) => a - b)
+  const sizeUsage = [...sizes.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([n, count]) => ({ value: `${n}px`, count }));
+
+  const spacingUsage = [...spacing.entries()]
+    .sort((a, b) => a[0] - b[0])
     .slice(0, 14)
-    .map((n) => `${n}px`);
+    .map(([n, count]) => ({ value: `${n}px`, count }));
 
   return {
     colors,
     roles: detectRoles(doc),
     fontFamilies: [...families].slice(0, 8),
-    fontSizes: [...sizes].sort((a, b) => a - b).map((n) => `${n}px`),
+    fontSizes: sizeUsage.map((s) => s.value),
     fontWeights: [...weights].sort((a, b) => a - b),
     lineHeights: [...lineHeights].slice(0, 10),
-    spacing: spacingPx,
+    spacing: spacingUsage.map((s) => s.value),
     radii: [...radii].slice(0, 10),
     shadows: [...shadows].slice(0, 10),
     gradients: [...gradients].slice(0, 10),
@@ -97,7 +102,8 @@ export function extractTokens(doc: Document): DesignTokens {
     body: detectBody(doc),
     bodyColor: doc.body ? toHex(getComputedStyle(doc.body).color) : null,
     components: detectComponents(doc),
-    baseUnit: spacingPx[0] ?? null,
+    baseUnit: spacingUsage[0]?.value ?? null,
+    usage: { colors: colorUsage, fontSizes: sizeUsage, spacing: spacingUsage },
     meta: {
       url: location.href,
       title: doc.title,

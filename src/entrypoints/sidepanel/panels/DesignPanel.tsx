@@ -11,6 +11,7 @@ import {
 import { useCopy } from '../useCopy';
 import { downloadText } from '../download';
 import { DownloadIcon } from '../icons';
+import { DesignOverview } from './DesignOverview';
 
 interface Format {
   key: string;
@@ -61,6 +62,12 @@ export function DesignPanel({
 
   return (
     <>
+      <DesignOverview tokens={tokens} />
+
+      <div className="export-head">
+        <span className="section-title">EXPORT</span>
+      </div>
+
       <div className="format-toggle design-formats">
         {FORMATS.map((f) => (
           <button

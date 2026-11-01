@@ -41,6 +41,22 @@ const t: DesignTokens = {
     link: { color: '#4b74ff', 'text-decoration-line': 'underline' },
   },
   baseUnit: '4px',
+  usage: {
+    colors: [
+      { value: '#4b74ff', count: 120 },
+      { value: '#111111', count: 80 },
+    ],
+    fontSizes: [
+      { value: '14px', count: 60 },
+      { value: '16px', count: 200 },
+      { value: '24px', count: 12 },
+    ],
+    spacing: [
+      { value: '4px', count: 90 },
+      { value: '8px', count: 140 },
+      { value: '16px', count: 40 },
+    ],
+  },
   meta: {
     url: 'https://x.test',
     title: 'X',
