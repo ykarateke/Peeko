@@ -17,6 +17,11 @@ export default defineContentScript({
     let hovered: Element | null = null;
     let selectedEl: Element | null = null;
     let ruler: Ruler | null = null;
+    let capturePrev: {
+      y: number;
+      behavior: string;
+      hidden: { el: HTMLElement; vis: string }[];
+    } | null = null;
     const isTopFrame = window.top === window.self;
 
     const onMove = (e: MouseEvent) => {
@@ -101,6 +106,34 @@ export default defineContentScript({
         browser.runtime.sendMessage({ type: 'RULER_STATE_CHANGED', active: false }).catch(() => {});
     }
 
+    function prepCapture() {
+      const hidden: { el: HTMLElement; vis: string }[] = [];
+      for (const el of Array.from(document.querySelectorAll<HTMLElement>('body *')).slice(
+        0,
+        5000,
+      )) {
+        const pos = getComputedStyle(el).position;
+        if (pos === 'fixed' || pos === 'sticky') {
+          hidden.push({ el, vis: el.style.visibility });
+          el.style.visibility = 'hidden';
+        }
+      }
+      capturePrev = {
+        y: window.scrollY,
+        behavior: document.documentElement.style.scrollBehavior,
+        hidden,
+      };
+      document.documentElement.style.scrollBehavior = 'auto';
+    }
+
+    function endCapture() {
+      if (!capturePrev) return;
+      for (const h of capturePrev.hidden) h.el.style.visibility = h.vis;
+      document.documentElement.style.scrollBehavior = capturePrev.behavior;
+      window.scrollTo(0, capturePrev.y);
+      capturePrev = null;
+    }
+
     browser.runtime.onMessage.addListener((message: Msg, _sender, sendResponse) => {
       switch (message.type) {
         case 'GET_INSPECT_STATUS':
@@ -137,6 +170,31 @@ export default defineContentScript({
         case 'GET_DESIGN_TOKENS':
           if (!isTopFrame) return undefined;
           sendResponse(extractTokens(document));
+          return true;
+        case 'GET_PAGE_METRICS':
+          if (!isTopFrame) return undefined;
+          sendResponse({
+            scrollWidth: document.documentElement.scrollWidth,
+            scrollHeight: document.documentElement.scrollHeight,
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight,
+            dpr: window.devicePixelRatio || 1,
+          });
+          return true;
+        case 'PREP_CAPTURE':
+          if (!isTopFrame) return undefined;
+          prepCapture();
+          sendResponse({ ok: true });
+          return true;
+        case 'SCROLL_TO':
+          if (!isTopFrame) return undefined;
+          window.scrollTo(0, message.y);
+          sendResponse({ ok: true });
+          return true;
+        case 'END_CAPTURE':
+          if (!isTopFrame) return undefined;
+          endCapture();
+          sendResponse({ ok: true });
           return true;
         default:
           return undefined;

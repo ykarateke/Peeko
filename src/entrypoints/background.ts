@@ -1,5 +1,15 @@
 import { browser } from 'wxt/browser';
-import { type Msg, RestrictedTabError } from '../core/messaging';
+import {
+  type Msg,
+  type PageMetrics,
+  type CaptureTile,
+  RestrictedTabError,
+} from '../core/messaging';
+import { tileOffsets } from '../core/capture-math';
+
+const MAX_TILES = 40;
+const CAPTURE_DELAY = 400; // ms between captureVisibleTab calls (rate limit + lazy load)
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // WXT's `browser` is the cross-browser accessor (the documented
 // `globalThis.browser?.runtime?.id ? browser : chrome` shim).
@@ -40,6 +50,12 @@ export default defineBackground(() => {
         .catch((err: unknown) => sendResponse({ ok: false, error: String(err) }));
       return true;
     }
+    if (message.type === 'CAPTURE_FULL_PAGE') {
+      captureFullPage()
+        .then((data) => sendResponse({ ok: true, data }))
+        .catch((err: unknown) => sendResponse({ ok: false, error: errorKind(err) }));
+      return true;
+    }
     if (message.type === 'SIMULATOR_ACTIVATE') {
       openDeviceWindow(message.payload)
         .then(() => sendResponse({ ok: true }))
@@ -67,16 +83,53 @@ async function relayToActiveTab(message: Msg): Promise<unknown> {
   } catch (err) {
     if (!isNoReceiver(err)) throw err;
     // Content script not injected yet — inject and retry once.
-    try {
-      await browser.scripting.executeScript({
-        target: { tabId, allFrames: true },
-        files: ['/content-scripts/content.js'],
-      });
-    } catch {
-      throw new RestrictedTabError();
-    }
+    await injectContent(tabId);
     return await browser.tabs.sendMessage(tabId, message);
   }
+}
+
+async function injectContent(tabId: number): Promise<void> {
+  try {
+    await browser.scripting.executeScript({
+      target: { tabId, allFrames: true },
+      files: ['/content-scripts/content.js'],
+    });
+  } catch {
+    throw new RestrictedTabError();
+  }
+}
+
+/** Full-page screenshot via scroll-and-stitch; returns per-tile captures for the panel to compose. */
+async function captureFullPage(): Promise<{ metrics: PageMetrics; tiles: CaptureTile[] }> {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id || isRestrictedUrl(tab.url)) throw new RestrictedTabError();
+  const tabId = tab.id;
+
+  const send = async (msg: Msg): Promise<unknown> => {
+    try {
+      return await browser.tabs.sendMessage(tabId, msg);
+    } catch (err) {
+      if (!isNoReceiver(err)) throw err;
+      await injectContent(tabId);
+      return browser.tabs.sendMessage(tabId, msg);
+    }
+  };
+
+  const metrics = (await send({ type: 'GET_PAGE_METRICS' })) as PageMetrics;
+  await send({ type: 'PREP_CAPTURE' });
+  const tiles: CaptureTile[] = [];
+  try {
+    const offsets = tileOffsets(metrics.scrollHeight, metrics.innerHeight).slice(0, MAX_TILES);
+    for (const y of offsets) {
+      await send({ type: 'SCROLL_TO', y });
+      await delay(CAPTURE_DELAY);
+      const dataUrl = await browser.tabs.captureVisibleTab({ format: 'png' });
+      tiles.push({ y, dataUrl });
+    }
+  } finally {
+    await send({ type: 'END_CAPTURE' }).catch(() => {});
+  }
+  return { metrics, tiles };
 }
 
 /** Open the active tab's URL in a device-sized popup window. */

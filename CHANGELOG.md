@@ -9,6 +9,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 First packaged release (F1–F8 complete). Store/AMO packages: `peeko-0.1.0-chrome.zip`,
 `peeko-0.1.0-firefox.zip`, `peeko-0.1.0-sources.zip`.
 
+### Added (Export / Capture — Phase 1)
+- **Export tab** (5th tab) — an independent capture module. **Full-page screenshot** via scroll-and-stitch (content reports metrics; background scrolls step-by-step, hides fixed/sticky, waits for lazy-load, captures each tile; the panel stitches on a canvas). **Viewport** and **Pick element** captures too. **PNG / JPEG / WebP** output. Session gallery (History) with preview, size, download, remove. Toolbar camera opens this tab. Pure `tileOffsets` helper tested; shared `capture.ts` (reused by the Inspect element-shot). Website Source ZIP export + persistent history are the next phase.
+
 ### Engineering
 - **ESLint 10 (flat config) + Prettier** wired; `pnpm lint` / `pnpm format` / `pnpm check`. TypeScript pinned to 5.9 (typescript-eslint doesn't yet support TS 7).
 - **CI** (`.github/workflows/ci.yml`): lint → typecheck → test → build (chrome + firefox).

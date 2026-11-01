@@ -1,4 +1,4 @@
-export const TABS = ['Styles', 'Assets', 'Inspect', 'Design'] as const;
+export const TABS = ['Styles', 'Assets', 'Inspect', 'Design', 'Export'] as const;
 export type Tab = (typeof TABS)[number];
 
 interface Props {

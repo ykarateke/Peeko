@@ -122,6 +122,19 @@ export interface DesignTokens {
   meta: { url: string; title: string; elementCount: number; generatedAt: string };
 }
 
+export interface PageMetrics {
+  scrollWidth: number;
+  scrollHeight: number;
+  innerWidth: number;
+  innerHeight: number;
+  dpr: number;
+}
+
+export interface CaptureTile {
+  y: number;
+  dataUrl: string;
+}
+
 export type AssetType = 'image' | 'svg' | 'icon' | 'video' | 'lottie' | 'font';
 
 export interface Asset {
@@ -150,6 +163,11 @@ export type Msg =
   | { type: 'CAPTURE_SCREENSHOT' }
   | { type: 'CAPTURE_ELEMENT_SCREENSHOT' }
   | { type: 'EXPORT_SECTION' }
+  | { type: 'CAPTURE_FULL_PAGE' }
+  | { type: 'GET_PAGE_METRICS' }
+  | { type: 'PREP_CAPTURE' }
+  | { type: 'SCROLL_TO'; y: number }
+  | { type: 'END_CAPTURE' }
   | { type: 'DOWNLOAD_IMAGE'; url: string; filename: string }
   | { type: 'DOWNLOAD_FONT'; url: string; filename: string }
   | {

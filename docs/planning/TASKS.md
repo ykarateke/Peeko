@@ -57,6 +57,13 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 - [~] Release: **icons done** + zip packages (`pnpm zip`/`zip:firefox`, v0.1.0); store screenshots + descriptions + privacy forms still needed (see [`../operations/DEPLOYMENT.md`](../operations/DEPLOYMENT.md)).
 - [ ] Full manual smoke on Chrome + Firefox; Network zero-request verification.
 
+## Capture & Export (independent module)
+
+- [x] Phase 1: **Export tab** — full-page (scroll-stitch), viewport, pick-element screenshots; PNG/JPEG/WebP; session gallery (`ExportPanel.tsx`, `capture.ts`, `core/capture-math.ts`, background `CAPTURE_FULL_PAGE`). Extension-native (no server/Playwright).
+- [ ] Phase 2: **Website Source Export (ZIP)** — fetch HTML/CSS/JS/assets, localize links, JSZip + resource `manifest.json` + success rate; **SSRF guard** (block localhost/private-IP/metadata), robots/copyright notice, timeout/retry, size cap.
+- [ ] Persistent capture/export history (IndexedDB) linked to the analysis.
+- [ ] Device-specific full-page capture (via the simulator window); keep the sticky header only on the first tile.
+
 ## Cross-cutting (any time)
 
 - [ ] Keep docs in sync with code (docs are authoritative).

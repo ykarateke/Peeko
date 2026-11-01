@@ -21,14 +21,15 @@ import { AssetsPanel } from './panels/AssetsPanel';
 import { InspectPanel } from './panels/InspectPanel';
 import { DesignPanel } from './panels/DesignPanel';
 import { SimulatorPanel } from './panels/SimulatorPanel';
-import { CapturePanel } from './panels/CapturePanel';
+import { ExportPanel } from './panels/ExportPanel';
 import { SettingsPanel } from './panels/SettingsPanel';
 import { Placeholder } from './panels/Placeholder';
+import { type Capture } from './capture';
 
 type Load<T> =
   { state: 'loading' } | { state: 'ready'; data: T } | { state: 'error'; restricted: boolean };
 
-type View = null | 'simulator' | 'capture' | 'settings';
+type View = null | 'simulator' | 'settings';
 
 export function App() {
   const [tab, setTab] = useState<Tab>('Styles');
@@ -40,6 +41,7 @@ export function App() {
   const [assets, setAssets] = useState<Load<Asset[]>>({ state: 'loading' });
   const [design, setDesign] = useState<Load<DesignTokens>>({ state: 'loading' });
   const [prefs, setPrefsState] = useState<Preferences>(DEFAULT_PREFS);
+  const [captures, setCaptures] = useState<Capture[]>([]);
 
   const query = useCallback(function <T>(type: Msg['type'], set: (l: Load<T>) => void) {
     set({ state: 'loading' });
@@ -137,7 +139,7 @@ export function App() {
         onToggleInspect={toggleInspect}
         onToggleRuler={toggleRuler}
         onSimulator={() => setView('simulator')}
-        onCapture={() => setView('capture')}
+        onCapture={() => pickTab('Export')}
         onSettings={() => setView('settings')}
         onRescan={refresh}
       />
@@ -145,7 +147,6 @@ export function App() {
 
       <main className="content">
         {view === 'simulator' && <SimulatorPanel />}
-        {view === 'capture' && <CapturePanel />}
         {view === 'settings' && <SettingsPanel prefs={prefs} onChange={updatePrefs} />}
 
         {view === null && tab === 'Styles' && (
@@ -171,6 +172,9 @@ export function App() {
           <Loaded load={design} restrictedTitle="Can't inspect this page">
             {(d) => <DesignPanel tokens={d} defaultFormat={prefs.export.defaultFormat} />}
           </Loaded>
+        )}
+        {view === null && tab === 'Export' && (
+          <ExportPanel captures={captures} setCaptures={setCaptures} />
         )}
       </main>
 
