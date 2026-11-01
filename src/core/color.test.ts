@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatColor, parseHex, contrastRatio, wcagLevel } from './color';
+import { formatColor, parseHex, contrastRatio, wcagLevel, hslParts, colorDistance } from './color';
 import { toHex } from './extract';
 
 describe('parseHex', () => {
@@ -15,6 +15,19 @@ describe('formatColor', () => {
   it('hsl red', () => expect(formatColor('#ff0000', 'hsl')).toBe('hsl(0, 100%, 50%)'));
   it('returns input unchanged when unparseable', () =>
     expect(formatColor('xyz', 'rgb')).toBe('xyz'));
+});
+
+describe('hslParts', () => {
+  it('red', () => expect(hslParts('#ff0000')).toEqual({ h: 0, s: 100, l: 50 }));
+  it('white has 0 saturation', () => expect(hslParts('#ffffff')).toMatchObject({ s: 0, l: 100 }));
+  it('blue hue ~240', () => expect(hslParts('#0000ff')?.h).toBe(240));
+});
+
+describe('colorDistance', () => {
+  it('identical is 0', () => expect(colorDistance('#112233', '#112233')).toBe(0));
+  it('near colors are small', () => expect(colorDistance('#112233', '#122234')!).toBeLessThan(5));
+  it('black vs white is max', () =>
+    expect(Math.round(colorDistance('#000000', '#ffffff')!)).toBe(442));
 });
 
 describe('contrastRatio / wcagLevel', () => {

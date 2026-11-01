@@ -1,16 +1,54 @@
-import { type DesignTokens, type Count } from '../../../core/messaging';
-import { contrastRatio, wcagLevel } from '../../../core/color';
+import { useState } from 'react';
+import {
+  type ColorToken,
+  type ColorGroup,
+  type DesignTokens,
+  type Count,
+  type TypeStyleToken,
+} from '../../../core/messaging';
+import { wcagLevel } from '../../../core/color';
 import { parseEasing, easingPath } from '../../../core/easing';
+import { scaleName } from '../../../core/classify';
 import { useCopy } from '../useCopy';
+import { Inspector, OriginBadge, type InspectorRow } from './Inspector';
 
-const ROLE_LABEL: Record<string, string> = {
-  background: 'bg',
-  text: 'text',
-  accent: 'accent',
-  link: 'link',
-  heading: 'heading',
-  border: 'border',
+const GROUP_ORDER: ColorGroup[] = [
+  'primary',
+  'secondary',
+  'accent',
+  'background',
+  'surface',
+  'text',
+  'border',
+  'success',
+  'warning',
+  'error',
+  'info',
+  'other',
+];
+const GROUP_LABEL: Record<ColorGroup, string> = {
+  primary: 'Primary',
+  secondary: 'Secondary',
+  accent: 'Accent',
+  background: 'Background',
+  surface: 'Surface',
+  text: 'Text',
+  border: 'Border',
+  success: 'Success',
+  warning: 'Warning',
+  error: 'Error',
+  info: 'Info',
+  other: 'Other',
 };
+
+const NAV = [
+  ['sec-overview', 'Overview'],
+  ['sec-colors', 'Colors'],
+  ['sec-type', 'Type'],
+  ['sec-spacing', 'Spacing'],
+  ['sec-effects', 'Effects'],
+  ['sec-tokens', 'Tokens'],
+] as const;
 
 function isLight(hex: string): boolean {
   const n = hex.replace('#', '');
@@ -20,75 +58,147 @@ function isLight(hex: string): boolean {
   const b = parseInt(n.slice(4, 6), 16);
   return 0.299 * r + 0.587 * g + 0.114 * b > 225;
 }
-
 const px = (v: string) => parseFloat(v) || 0;
-const max = (a: Count[]) => a.reduce((m, c) => Math.max(m, c.count), 1);
+
+type Inspect =
+  { kind: 'color'; token: ColorToken } | { kind: 'type'; token: TypeStyleToken } | null;
 
 export function DesignOverview({ tokens: t }: { tokens: DesignTokens }) {
   const [copied, copy] = useCopy();
+  const [group, setGroup] = useState<ColorGroup | 'all'>('all');
+  const [inspect, setInspect] = useState<Inspect>(null);
+
   const family = t.fontFamilies[0] ?? 'inherit';
+  const grouped = GROUP_ORDER.map((g) => ({
+    g,
+    items: t.colorTokens.filter((c) => c.group === g),
+  })).filter((x) => x.items.length > 0);
+  const shownGroups = group === 'all' ? grouped : grouped.filter((x) => x.g === group);
+
+  function jump(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   return (
     <div className="dov">
-      {/* Stat tiles */}
-      <div className="stat-tiles">
-        <Stat n={t.colors.length} label="colors" />
-        <Stat n={t.fontFamilies.length} label="fonts" />
-        <Stat n={t.fontSizes.length} label="type sizes" />
-        <Stat n={t.spacing.length} label="spacing" />
-        <Stat n={t.baseUnit ?? '—'} label="base unit" />
-        <Stat n={t.meta.elementCount} label="elements" />
-      </div>
+      <nav className="dov-nav">
+        {NAV.map(([id, label]) => (
+          <button key={id} className="dov-nav-btn" onClick={() => jump(id)}>
+            {label}
+          </button>
+        ))}
+      </nav>
 
-      {/* Palette + roles */}
-      <Section title="Palette">
-        {Object.keys(t.roles).length > 0 && (
-          <div className="role-row">
-            {Object.entries(t.roles).map(([k, v]) => (
-              <button key={k} className="role-chip" title={v} onClick={() => copy(v)}>
-                <span
-                  className={`role-dot${isLight(v) ? ' is-light' : ''}`}
-                  style={{ background: v }}
-                />
-                {ROLE_LABEL[k] ?? k}
-              </button>
+      {/* A. Overview */}
+      <div id="sec-overview">
+        <div className="stat-tiles">
+          <Stat n={t.overview.counts.colors} label="colors" />
+          <Stat n={t.overview.counts.typography} label="type styles" />
+          <Stat n={t.overview.counts.components} label="components" />
+          <Stat n={t.overview.counts.tokens} label="tokens" />
+          <Stat n={t.spacing.length} label="spacing" />
+          <Stat n={t.meta.elementCount} label="elements" />
+        </div>
+        <div className="ds-summary">
+          <div className="ds-style">
+            <span className="ds-style-label">{t.overview.style.label}</span>
+            <span className="conf">
+              style · {Math.round(t.overview.style.confidence * 100)}% (inferred)
+            </span>
+          </div>
+          <div className="ds-score">
+            <div className="ds-score-bar">
+              <span style={{ width: `${t.overview.consistencyScore}%` }} />
+            </div>
+            <span className="ds-score-n">{t.overview.consistencyScore}/100 consistency</span>
+          </div>
+        </div>
+        {t.overview.characteristics.length > 0 && (
+          <div className="chip-previews">
+            {t.overview.characteristics.map((c) => (
+              <span className="dur-chip" key={c}>
+                {c}
+              </span>
             ))}
           </div>
         )}
-        <div className="dov-swatches">
-          {t.colors.map((c, i) => (
+        <div className="dov-url" title={t.meta.url}>
+          {t.meta.url}
+        </div>
+      </div>
+
+      {/* B. Color System */}
+      <div id="sec-colors" className="dov-sec">
+        <div className="section-title dov-h">Color system</div>
+        <div className="filter-row">
+          <button
+            className={`filter-chip${group === 'all' ? ' is-active' : ''}`}
+            onClick={() => setGroup('all')}
+          >
+            All <span className="filter-count">{t.colorTokens.length}</span>
+          </button>
+          {grouped.map((x) => (
             <button
-              key={`${c}-${i}`}
-              className={`dov-swatch${isLight(c) ? ' is-light' : ''}${copied === c ? ' is-copied' : ''}`}
-              style={{ background: c }}
-              title={c}
-              onClick={() => copy(c)}
-            />
+              key={x.g}
+              className={`filter-chip${group === x.g ? ' is-active' : ''}`}
+              onClick={() => setGroup(x.g)}
+            >
+              {GROUP_LABEL[x.g]} <span className="filter-count">{x.items.length}</span>
+            </button>
           ))}
         </div>
-      </Section>
+        {shownGroups.map((x) => (
+          <div className="color-group" key={x.g}>
+            <div className="color-group-h">{GROUP_LABEL[x.g]}</div>
+            <div className="color-cards">
+              {x.items.map((c) => (
+                <button
+                  key={c.cssVar}
+                  className="color-card"
+                  onClick={() => setInspect({ kind: 'color', token: c })}
+                >
+                  <span
+                    className={`color-card-sw${isLight(c.hex) ? ' is-light' : ''}`}
+                    style={{ background: c.hex }}
+                  />
+                  <span className="color-card-meta">
+                    <span className="color-card-hex">{c.hex}</span>
+                    <span className="color-card-sub">
+                      {c.occurrences}× {c.similarTo && '· dup'}
+                    </span>
+                  </span>
+                  <OriginBadge origin={c.origin} />
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
-      {/* Color usage bars */}
-      {t.usage.colors.length > 0 && (
-        <Section title="Color usage">
-          <BarList rows={t.usage.colors.slice(0, 10)} fillByValue />
-        </Section>
-      )}
-
-      {/* Typography */}
-      <Section title="Typography">
+      {/* C. Typography */}
+      <div id="sec-type" className="dov-sec">
+        <div className="section-title dov-h">Typography</div>
         <div className="type-families">{t.fontFamilies.join(' · ') || '—'}</div>
         <div className="type-scale">
-          {t.fontSizes.map((s) => (
-            <div className="type-row" key={s}>
+          {t.textStyles.map((s) => (
+            <button
+              className="type-style-row"
+              key={s.name}
+              onClick={() => setInspect({ kind: 'type', token: s })}
+            >
               <span
                 className="type-sample"
-                style={{ fontFamily: family, fontSize: Math.min(px(s), 34) }}
+                style={{
+                  fontFamily: family,
+                  fontSize: Math.min(px(s.size), 32),
+                  fontWeight: Number(s.weight) || undefined,
+                }}
               >
-                Ag
+                {s.name}
               </span>
-              <span className="type-size">{s}</span>
-            </div>
+              <span className="type-size">{s.size}</span>
+              <OriginBadge origin={s.origin} />
+            </button>
           ))}
         </div>
         {t.fontWeights.length > 0 && (
@@ -100,98 +210,55 @@ export function DesignOverview({ tokens: t }: { tokens: DesignTokens }) {
             ))}
           </div>
         )}
-        {Object.keys(t.headings).length > 0 && (
-          <div className="head-list">
-            {Object.entries(t.headings).map(([tag, s]) => (
-              <div className="head-row" key={tag}>
-                <span className="head-tag">{tag}</span>
-                <span className="head-meta">
-                  {s.size} · {s.weight} · lh {s.lineHeight}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </Section>
+      </div>
 
-      {/* Spacing */}
-      {t.usage.spacing.length > 0 && (
-        <Section title="Spacing scale">
-          <BarList rows={t.usage.spacing} byPx baseUnit={t.baseUnit} />
-        </Section>
-      )}
-
-      {/* Radii */}
-      {t.radii.length > 0 && (
-        <Section title="Radii">
-          <div className="chip-previews">
-            {t.radii.map((r) => (
-              <div className="radii-item" key={r}>
-                <span className="radii-box" style={{ borderRadius: r }} />
-                <span className="chip-label">{r}</span>
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Shadows */}
-      {t.shadows.length > 0 && (
-        <Section title="Shadows">
-          <div className="shadow-previews">
-            {t.shadows.map((s, i) => (
-              <div className="shadow-box" key={i} style={{ boxShadow: s }} title={s} />
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Components */}
-      {Object.keys(t.components).length > 0 && (
-        <Section title="Components">
-          <div className="cmp-previews">
-            {t.components.button && (
-              <button className="cmp-el" style={styleOf(t.components.button)} tabIndex={-1}>
-                Button
-              </button>
-            )}
-            {t.components.input && (
-              <input
-                className="cmp-el"
-                style={styleOf(t.components.input)}
-                defaultValue="Input"
-                readOnly
-                tabIndex={-1}
-              />
-            )}
-            {t.components.link && (
-              <a className="cmp-el cmp-link" style={styleOf(t.components.link)}>
-                Link
-              </a>
-            )}
-          </div>
-        </Section>
-      )}
-
-      {/* Contrast */}
-      <ContrastBlock t={t} />
-
-      {/* Breakpoints + container */}
-      {(t.breakpoints.length > 0 || t.containers.length > 0) && (
-        <Section title="Breakpoints">
-          <BpRuler breakpoints={t.breakpoints} containers={t.containers} />
-        </Section>
-      )}
-
-      {/* Motion */}
-      {(t.durations.length > 0 || t.easings.length > 0) && (
-        <Section title="Motion">
-          {t.durations.length > 0 && (
+      {/* D. Spacing & layout */}
+      <div id="sec-spacing" className="dov-sec">
+        <div className="section-title dov-h">Spacing</div>
+        {t.usage.spacing.length > 0 && <BarList rows={t.usage.spacing} baseUnit={t.baseUnit} />}
+        {t.spacingNormalized.length > 0 && (
+          <>
+            <div className="sub-h">
+              Normalized scale <OriginBadge origin="normalized" />
+            </div>
             <div className="chip-previews">
-              {t.durations.map((d) => (
-                <span className="dur-chip" key={d}>
-                  {d}
+              {t.spacingNormalized.map((s, i) => (
+                <span className="dur-chip" key={s.value}>
+                  {scaleName(i)} · {s.value}
                 </span>
+              ))}
+            </div>
+          </>
+        )}
+        {t.breakpoints.length > 0 || t.containers.length > 0 ? (
+          <>
+            <div className="sub-h">Breakpoints &amp; container</div>
+            <BpRuler breakpoints={t.breakpoints} containers={t.containers} />
+          </>
+        ) : null}
+      </div>
+
+      {/* E. Effects */}
+      {(t.radii.length > 0 ||
+        t.shadows.length > 0 ||
+        t.gradients.length > 0 ||
+        t.easings.length > 0) && (
+        <div id="sec-effects" className="dov-sec">
+          <div className="section-title dov-h">Effects</div>
+          {t.radii.length > 0 && (
+            <div className="chip-previews">
+              {t.radii.map((r) => (
+                <div className="radii-item" key={r}>
+                  <span className="radii-box" style={{ borderRadius: r }} />
+                  <span className="chip-label">{r}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {t.shadows.length > 0 && (
+            <div className="shadow-previews">
+              {t.shadows.map((s, i) => (
+                <div className="shadow-box" key={i} style={{ boxShadow: s }} title={s} />
               ))}
             </div>
           )}
@@ -211,7 +278,44 @@ export function DesignOverview({ tokens: t }: { tokens: DesignTokens }) {
               })}
             </div>
           )}
-        </Section>
+        </div>
+      )}
+
+      {/* Interactive preview */}
+      <div className="dov-sec">
+        <div className="section-title dov-h">Preview</div>
+        <PreviewBoard t={t} />
+      </div>
+
+      {/* F. Components (Phase 2) */}
+      <div className="dov-sec">
+        <div className="section-title dov-h">Components</div>
+        <p className="view-note">
+          Component library (variants, states, screenshots) — coming in the next phase.
+        </p>
+      </div>
+
+      {/* G. Tokens table */}
+      <div id="sec-tokens" className="dov-sec">
+        <div className="section-title dov-h">Design tokens</div>
+        <TokenTable t={t} copied={copied} onCopy={copy} />
+      </div>
+
+      {inspect?.kind === 'color' && (
+        <ColorInspector
+          token={inspect.token}
+          copied={copied}
+          onCopy={copy}
+          onClose={() => setInspect(null)}
+        />
+      )}
+      {inspect?.kind === 'type' && (
+        <TypeInspector
+          token={inspect.token}
+          copied={copied}
+          onCopy={copy}
+          onClose={() => setInspect(null)}
+        />
       )}
     </div>
   );
@@ -226,79 +330,25 @@ function Stat({ n, label }: { n: number | string; label: string }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="dov-sec">
-      <div className="section-title dov-h">{title}</div>
-      {children}
-    </div>
-  );
-}
-
-function BarList({
-  rows,
-  fillByValue,
-  byPx,
-  baseUnit,
-}: {
-  rows: Count[];
-  fillByValue?: boolean;
-  byPx?: boolean;
-  baseUnit?: string | null;
-}) {
-  const m = byPx ? Math.max(...rows.map((r) => px(r.value)), 1) : max(rows);
+function BarList({ rows, baseUnit }: { rows: Count[]; baseUnit?: string | null }) {
+  const m = Math.max(...rows.map((r) => px(r.value)), 1);
   return (
     <div className="bars">
-      {rows.map((r) => {
-        const pct = ((byPx ? px(r.value) : r.count) / m) * 100;
-        const light = fillByValue && isLight(r.value);
-        return (
-          <div className="bar-row" key={r.value} title={`${r.value} · used ${r.count}×`}>
-            {fillByValue && (
-              <span
-                className={`bar-swatch${light ? ' is-light' : ''}`}
-                style={{ background: r.value }}
-              />
-            )}
-            <div className="bar-track">
-              <span
-                className={`bar-fill${light ? ' is-light' : ''}${!fillByValue ? ' bar-accent' : ''}${baseUnit === r.value ? ' is-base' : ''}`}
-                style={{
-                  width: `${Math.max(pct, 3)}%`,
-                  background: fillByValue ? r.value : undefined,
-                }}
-              />
-            </div>
-            <span className="bar-label">
-              {r.value}
-              <span className="bar-count">{r.count}×</span>
-            </span>
+      {rows.map((r) => (
+        <div className="bar-row" key={r.value} title={`${r.value} · used ${r.count}×`}>
+          <div className="bar-track">
+            <span
+              className={`bar-fill bar-accent${baseUnit === r.value ? ' is-base' : ''}`}
+              style={{ width: `${Math.max((px(r.value) / m) * 100, 3)}%` }}
+            />
           </div>
-        );
-      })}
+          <span className="bar-label">
+            {r.value}
+            <span className="bar-count">{r.count}×</span>
+          </span>
+        </div>
+      ))}
     </div>
-  );
-}
-
-function ContrastBlock({ t }: { t: DesignTokens }) {
-  const bg = t.roles.background;
-  const text = t.roles.text ?? t.bodyColor ?? undefined;
-  if (!bg || !text) return null;
-  const ratio = contrastRatio(text, bg);
-  if (ratio === null) return null;
-  const level = wcagLevel(ratio);
-  return (
-    <Section title="Contrast">
-      <div className="contrast-sample" style={{ background: bg, color: text }}>
-        The quick brown fox
-      </div>
-      <div className="contrast-meta">
-        <span className="contrast-ratio">{ratio.toFixed(2)}:1</span>
-        <span className={`contrast-badge lvl-${level.replace(/\s/g, '').toLowerCase()}`}>
-          {level}
-        </span>
-      </div>
-    </Section>
   );
 }
 
@@ -332,11 +382,170 @@ function BpRuler({ breakpoints, containers }: { breakpoints: string[]; container
   );
 }
 
-/** camelCase a kebab css map for React inline styles. */
-function styleOf(props: Record<string, string>): React.CSSProperties {
-  const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(props)) {
-    out[k.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())] = v;
-  }
-  return out as React.CSSProperties;
+function ColorInspector({
+  token: c,
+  copied,
+  onCopy,
+  onClose,
+}: {
+  token: ColorToken;
+  copied: string | null;
+  onCopy: (t: string) => void;
+  onClose: () => void;
+}) {
+  const rows: InspectorRow[] = [
+    { label: 'HEX', value: c.hex, copyable: true },
+    { label: 'RGB', value: c.rgb, copyable: true },
+    { label: 'HSL', value: c.hsl, copyable: true },
+    { label: 'CSS var', value: `${c.cssVar}: ${c.hex};`, copyable: true },
+    { label: 'Group', value: c.group },
+    { label: 'Occurrences', value: `${c.occurrences}` },
+    { label: 'On white', value: `${c.onLight}:1 (${wcagLevel(c.onLight)})` },
+    { label: 'On dark', value: `${c.onDark}:1 (${wcagLevel(c.onDark)})` },
+  ];
+  return (
+    <Inspector
+      title={c.hex}
+      swatch={c.hex}
+      origin={c.origin}
+      confidence={c.confidence}
+      rows={rows}
+      note={c.similarTo ? `Near-duplicate of ${c.similarTo} — consider merging.` : undefined}
+      copied={copied}
+      onCopy={onCopy}
+      onClose={onClose}
+    />
+  );
+}
+
+function TypeInspector({
+  token: s,
+  copied,
+  onCopy,
+  onClose,
+}: {
+  token: TypeStyleToken;
+  copied: string | null;
+  onCopy: (t: string) => void;
+  onClose: () => void;
+}) {
+  const css = `font-size: ${s.size};\nfont-weight: ${s.weight};\nline-height: ${s.lineHeight};${s.letterSpacing ? `\nletter-spacing: ${s.letterSpacing};` : ''}`;
+  const rows: InspectorRow[] = [
+    { label: 'Size', value: s.size },
+    { label: 'Weight', value: s.weight },
+    { label: 'Line height', value: s.lineHeight },
+    ...(s.letterSpacing ? [{ label: 'Letter spacing', value: s.letterSpacing }] : []),
+    ...(s.source ? [{ label: 'Source', value: s.source }] : []),
+    { label: 'CSS', value: css, copyable: true },
+  ];
+  return (
+    <Inspector
+      title={s.name}
+      origin={s.origin}
+      rows={rows}
+      copied={copied}
+      onCopy={onCopy}
+      onClose={onClose}
+    />
+  );
+}
+
+function PreviewBoard({ t }: { t: DesignTokens }) {
+  const bg = t.roles.background ?? '#ffffff';
+  const text = t.roles.text ?? t.bodyColor ?? '#111111';
+  const accent =
+    t.roles.accent ?? t.colorTokens.find((c) => c.group === 'primary')?.hex ?? '#4b74ff';
+  const radius = t.radii[0] ?? '8px';
+  const h1 = t.textStyles.find((s) => s.name === 'Display' || s.name === 'H1');
+  const body = t.textStyles.find((s) => s.name === 'Body');
+  return (
+    <div className="preview-board" style={{ background: bg, color: text, borderRadius: radius }}>
+      <div
+        style={{
+          fontFamily: t.fontFamilies[0],
+          fontSize: Math.min(px(h1?.size ?? '24px'), 26),
+          fontWeight: 700,
+          lineHeight: 1.2,
+        }}
+      >
+        {t.meta.title || 'Heading'}
+      </div>
+      <div
+        style={{ fontSize: Math.min(px(body?.size ?? '14px'), 14), opacity: 0.85, marginTop: 4 }}
+      >
+        The quick brown fox jumps over the lazy dog.
+      </div>
+      <div className="preview-actions">
+        <span
+          className="pv-btn"
+          style={{ background: accent, color: '#fff', borderRadius: radius }}
+        >
+          Primary
+        </span>
+        <span
+          className="pv-btn"
+          style={{
+            background: 'transparent',
+            color: accent,
+            border: `1px solid ${accent}`,
+            borderRadius: radius,
+          }}
+        >
+          Secondary
+        </span>
+        <span className="pv-badge" style={{ background: accent, borderRadius: 999 }}>
+          Badge
+        </span>
+      </div>
+      <div className="pv-input" style={{ borderRadius: radius }}>
+        Input field
+      </div>
+    </div>
+  );
+}
+
+function TokenTable({
+  t,
+  copied,
+  onCopy,
+}: {
+  t: DesignTokens;
+  copied: string | null;
+  onCopy: (text: string) => void;
+}) {
+  const rows: { name: string; value: string; origin: ColorToken['origin']; occ?: number }[] = [
+    ...t.colorTokens.map((c) => ({
+      name: c.cssVar,
+      value: c.hex,
+      origin: c.origin,
+      occ: c.occurrences,
+    })),
+    ...t.spacingNormalized.map((s, i) => ({
+      name: `--spacing-${scaleName(i)}`,
+      value: s.value,
+      origin: s.origin,
+      occ: s.occurrences,
+    })),
+    ...t.radii.map((r, i) => ({
+      name: `--radius-${scaleName(i)}`,
+      value: r,
+      origin: 'extracted' as const,
+    })),
+  ];
+  return (
+    <div className="token-table">
+      {rows.map((r) => (
+        <button
+          key={r.name + r.value}
+          className={`token-row${copied === `${r.name}: ${r.value};` ? ' is-copied' : ''}`}
+          onClick={() => onCopy(`${r.name}: ${r.value};`)}
+          title="Copy declaration"
+        >
+          <span className="token-name">{r.name}</span>
+          <span className="token-val">{r.value}</span>
+          <OriginBadge origin={r.origin} />
+        </button>
+      ))}
+    </div>
+  );
 }

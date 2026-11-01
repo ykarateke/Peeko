@@ -146,6 +146,50 @@ export function exportJson(t: DesignTokens): string {
   return JSON.stringify(doc, null, 2) + '\n';
 }
 
+/** Tokens Studio (Figma) compatible JSON — one "global" set with typed tokens. */
+export function exportFigma(t: DesignTokens): string {
+  const idx = <T>(arr: T[], name: (v: T, i: number) => string, make: (v: T) => object) => {
+    const o: Record<string, object> = {};
+    arr.forEach((v, i) => {
+      o[name(v, i)] = make(v);
+    });
+    return o;
+  };
+  const global = {
+    color: idx(
+      t.colorTokens,
+      (c) => c.cssVar.replace(/^--color-/, ''),
+      (c) => ({ value: c.hex, type: 'color' }),
+    ),
+    fontFamilies: idx(
+      t.fontFamilies,
+      (_f, i) => `font-${i + 1}`,
+      (f) => ({ value: f, type: 'fontFamilies' }),
+    ),
+    fontSizes: idx(
+      t.fontSizes,
+      (_s, i) => `text-${i + 1}`,
+      (s) => ({ value: s, type: 'fontSizes' }),
+    ),
+    spacing: idx(
+      t.spacing,
+      (_s, i) => `space-${i + 1}`,
+      (s) => ({ value: s, type: 'spacing' }),
+    ),
+    borderRadius: idx(
+      t.radii,
+      (_r, i) => `radius-${i + 1}`,
+      (r) => ({ value: r, type: 'borderRadius' }),
+    ),
+    boxShadow: idx(
+      t.shadows,
+      (_s, i) => `shadow-${i + 1}`,
+      (s) => ({ value: s, type: 'boxShadow' }),
+    ),
+  };
+  return JSON.stringify({ global }, null, 2) + '\n';
+}
+
 export function exportMarkdown(t: DesignTokens): string {
   const L: string[] = [];
   L.push(`# Design System — ${t.meta.title || t.meta.url}`, '');

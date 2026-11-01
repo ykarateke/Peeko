@@ -25,6 +25,37 @@ export function parseHex(hex: string): [number, number, number] | null {
   return [r, g, b].some((n) => Number.isNaN(n)) ? null : [r, g, b];
 }
 
+/** Hue (0-360), saturation & lightness (0-100) from a hex color; null if unparseable. */
+export function hslParts(hex: string): { h: number; s: number; l: number } | null {
+  const rgb = parseHex(hex);
+  if (!rgb) return null;
+  const r = rgb[0] / 255;
+  const g = rgb[1] / 255;
+  const b = rgb[2] / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  const l = (max + min) / 2;
+  let h = 0;
+  let s = 0;
+  if (d !== 0) {
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h /= 6;
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+
+/** Euclidean RGB distance (0-441); small = near-duplicate. */
+export function colorDistance(a: string, b: string): number | null {
+  const ra = parseHex(a);
+  const rb = parseHex(b);
+  if (!ra || !rb) return null;
+  return Math.sqrt((ra[0] - rb[0]) ** 2 + (ra[1] - rb[1]) ** 2 + (ra[2] - rb[2]) ** 2);
+}
+
 export function relativeLuminance(hex: string): number | null {
   const rgb = parseHex(hex);
   if (!rgb) return null;

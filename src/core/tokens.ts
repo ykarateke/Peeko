@@ -1,5 +1,7 @@
-import type { DesignTokens, TypeStyle } from './messaging';
+import type { ColorToken, DesignTokens, TypeStyle, TypeStyleToken } from './messaging';
 import { toHex, primaryFamily, weightOf } from './extract';
+import { contrastRatio, formatColor, hslParts, colorDistance } from './color';
+import { classifyColor, normalizeSpacing, designStyle, consistencyScore } from './classify';
 
 const NOISE = new Set(['', 'none', 'normal', 'auto', 'rgba(0, 0, 0, 0)', 'transparent', '0px']);
 
@@ -82,34 +84,205 @@ export function extractTokens(doc: Document): DesignTokens {
     .slice(0, 14)
     .map(([n, count]) => ({ value: `${n}px`, count }));
 
+  const roles = detectRoles(doc);
+  const radiiList = [...radii].slice(0, 10);
+  const shadowList = [...shadows].slice(0, 10);
+  const fontFamilies = [...families].slice(0, 8);
+  const fontSizes = sizeUsage.map((s) => s.value);
+  const spacingList = spacingUsage.map((s) => s.value);
+  const headings = detectHeadings(doc);
+  const body = detectBody(doc);
+  const components = detectComponents(doc);
+
+  const colorTokens = buildColorTokens(colorUsage, roles);
+  const textStyles = buildTextStyles(headings, body, fontSizes, components);
+  const spacingNormalized = normalizeSpacing(spacingList);
+
+  const style = designStyle({ radii: radiiList, shadows: shadowList, colors, fontFamilies });
+  const tokenCount =
+    colorTokens.length +
+    textStyles.length +
+    spacingList.length +
+    radiiList.length +
+    shadowList.length;
+
   return {
     colors,
-    roles: detectRoles(doc),
-    fontFamilies: [...families].slice(0, 8),
-    fontSizes: sizeUsage.map((s) => s.value),
+    roles,
+    fontFamilies,
+    fontSizes,
     fontWeights: [...weights].sort((a, b) => a - b),
     lineHeights: [...lineHeights].slice(0, 10),
-    spacing: spacingUsage.map((s) => s.value),
-    radii: [...radii].slice(0, 10),
-    shadows: [...shadows].slice(0, 10),
+    spacing: spacingList,
+    radii: radiiList,
+    shadows: shadowList,
     gradients: [...gradients].slice(0, 10),
     breakpoints: extractBreakpoints(doc),
     containers: detectContainers(doc),
     durations: [...durations].sort((a, b) => msOf(a) - msOf(b)).slice(0, 8),
     easings: [...easings].slice(0, 8),
     animations: extractKeyframes(doc),
-    headings: detectHeadings(doc),
-    body: detectBody(doc),
+    headings,
+    body,
     bodyColor: doc.body ? toHex(getComputedStyle(doc.body).color) : null,
-    components: detectComponents(doc),
+    components,
     baseUnit: spacingUsage[0]?.value ?? null,
     usage: { colors: colorUsage, fontSizes: sizeUsage, spacing: spacingUsage },
+    colorTokens,
+    textStyles,
+    spacingNormalized,
+    overview: {
+      style: { label: style.label, confidence: style.confidence },
+      consistencyScore: consistencyScore({
+        colors: colors.length,
+        fontSizes: fontSizes.length,
+        spacing: spacingList.length,
+        radii: radiiList.length,
+      }),
+      characteristics: style.characteristics,
+      counts: {
+        colors: colorTokens.length,
+        typography: textStyles.length,
+        components: Object.keys(components).length,
+        tokens: tokenCount,
+      },
+    },
     meta: {
       url: location.href,
       title: doc.title,
       elementCount: doc.querySelectorAll('*').length,
       generatedAt: new Date().toISOString(),
     },
+  };
+}
+
+/** Build categorized color tokens (hex/rgb/hsl/cssVar/group/contrast/similar) from frequency data. */
+function buildColorTokens(
+  usage: { value: string; count: number }[],
+  roles: Record<string, string>,
+): ColorToken[] {
+  const roleHexes = new Set(Object.values(roles).map((v) => v.toLowerCase()));
+  let satIdx = 0;
+  const groupIdx: Record<string, number> = {};
+
+  const tokens: ColorToken[] = usage.map(({ value: hex, count }) => {
+    const hsl = hslParts(hex);
+    const roleHit = roleHexes.has(hex.toLowerCase());
+    const saturated = !!hsl && hsl.s > 12 && !roleHit;
+    const accentRank = saturated ? satIdx++ : 99;
+    const cls = classifyColor(hex, { roles, accentRank });
+    const n = (groupIdx[cls.group] = (groupIdx[cls.group] ?? 0) + 1);
+    return {
+      value: hex,
+      hex,
+      rgb: formatColor(hex, 'rgb'),
+      hsl: formatColor(hex, 'hsl'),
+      cssVar: `--color-${cls.group}-${n}`,
+      group: cls.group,
+      origin: cls.origin,
+      confidence: cls.confidence,
+      occurrences: count,
+      onLight: round2(contrastRatio(hex, '#ffffff')),
+      onDark: round2(contrastRatio(hex, '#111111')),
+    };
+  });
+
+  // mark near-duplicates against an earlier (more frequent) token
+  for (let i = 0; i < tokens.length; i++) {
+    for (let j = 0; j < i; j++) {
+      const d = colorDistance(tokens[i]!.hex, tokens[j]!.hex);
+      if (d !== null && d < 10) {
+        tokens[i]!.similarTo = tokens[j]!.hex;
+        break;
+      }
+    }
+  }
+  return tokens;
+}
+
+function round2(n: number | null): number {
+  return n === null ? 0 : Math.round(n * 100) / 100;
+}
+
+/** Map detected typography into semantic text styles (extracted where direct, else inferred). */
+function buildTextStyles(
+  headings: Record<string, TypeStyle>,
+  body: TypeStyle | null,
+  fontSizes: string[],
+  components: Record<string, Record<string, string>>,
+): TypeStyleToken[] {
+  const out: TypeStyleToken[] = [];
+  const nums = fontSizes.map((s) => parseFloat(s)).filter((n) => !Number.isNaN(n));
+  const maxSize = nums.length ? Math.max(...nums) : null;
+
+  const h1 = headings.h1;
+  if (maxSize !== null) {
+    const fromH1 = h1 && parseFloat(h1.size) === maxSize;
+    out.push({
+      name: 'Display',
+      size: `${maxSize}px`,
+      weight: h1?.weight ?? '700',
+      lineHeight: h1?.lineHeight ?? '1.1',
+      letterSpacing: h1?.letterSpacing,
+      origin: fromH1 ? 'extracted' : 'inferred',
+      source: fromH1 ? 'h1' : undefined,
+    });
+  }
+  for (const tag of ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']) {
+    const s = headings[tag];
+    if (s)
+      out.push({
+        name: tag.toUpperCase(),
+        size: s.size,
+        weight: s.weight,
+        lineHeight: s.lineHeight,
+        letterSpacing: s.letterSpacing,
+        origin: 'extracted',
+        source: tag,
+      });
+  }
+  if (body) {
+    out.push({ ...styleOfBody(body, 'Body', 'body'), origin: 'extracted', source: 'body' });
+    const b = parseFloat(body.size);
+    if (!Number.isNaN(b)) {
+      out.push({
+        name: 'Body Small',
+        size: `${Math.round(b * 0.875)}px`,
+        weight: body.weight,
+        lineHeight: body.lineHeight,
+        origin: 'inferred',
+      });
+      out.push({
+        name: 'Caption',
+        size: `${Math.round(b * 0.75)}px`,
+        weight: body.weight,
+        lineHeight: '1.4',
+        origin: 'inferred',
+      });
+    }
+  }
+  const btn = components.button;
+  if (btn?.['font-size'])
+    out.push({
+      name: 'Button',
+      size: btn['font-size'],
+      weight: btn['font-weight'] ?? '600',
+      lineHeight: '1',
+      origin: 'extracted',
+      source: 'button',
+    });
+  return out;
+}
+
+function styleOfBody(body: TypeStyle, name: string, source: string): TypeStyleToken {
+  return {
+    name,
+    size: body.size,
+    weight: body.weight,
+    lineHeight: body.lineHeight,
+    letterSpacing: body.letterSpacing,
+    origin: 'extracted',
+    source,
   };
 }
 
@@ -149,7 +322,13 @@ function detectBody(doc: Document): TypeStyle | null {
 
 function typeStyle(el: Element): TypeStyle {
   const cs = getComputedStyle(el);
-  return { size: cs.fontSize, weight: cs.fontWeight, lineHeight: cs.lineHeight };
+  const ls = cs.letterSpacing;
+  return {
+    size: cs.fontSize,
+    weight: cs.fontWeight,
+    lineHeight: cs.lineHeight,
+    letterSpacing: ls && ls !== 'normal' ? ls : undefined,
+  };
 }
 
 function detectComponents(doc: Document): Record<string, Record<string, string>> {

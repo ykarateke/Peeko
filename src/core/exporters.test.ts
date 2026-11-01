@@ -7,6 +7,7 @@ import {
   exportTailwind,
   exportMarkdown,
   exportAgentBrief,
+  exportFigma,
 } from './exporters';
 
 const t: DesignTokens = {
@@ -41,6 +42,62 @@ const t: DesignTokens = {
     link: { color: '#4b74ff', 'text-decoration-line': 'underline' },
   },
   baseUnit: '4px',
+  colorTokens: [
+    {
+      value: '#4b74ff',
+      hex: '#4b74ff',
+      rgb: 'rgb(75, 116, 255)',
+      hsl: 'hsl(224, 100%, 65%)',
+      cssVar: '--color-primary-1',
+      group: 'primary',
+      origin: 'inferred',
+      occurrences: 120,
+      confidence: 0.6,
+      onLight: 3.1,
+      onDark: 5.2,
+    },
+    {
+      value: '#111111',
+      hex: '#111111',
+      rgb: 'rgb(17, 17, 17)',
+      hsl: 'hsl(0, 0%, 7%)',
+      cssVar: '--color-text-1',
+      group: 'text',
+      origin: 'extracted',
+      occurrences: 80,
+      confidence: 0.9,
+      onLight: 18.1,
+      onDark: 1.2,
+    },
+  ],
+  textStyles: [
+    {
+      name: 'H1',
+      size: '32px',
+      weight: '700',
+      lineHeight: '40px',
+      origin: 'extracted',
+      source: 'h1',
+    },
+    {
+      name: 'Body',
+      size: '16px',
+      weight: '400',
+      lineHeight: '24px',
+      origin: 'extracted',
+      source: 'body',
+    },
+  ],
+  spacingNormalized: [
+    { value: '4px', origin: 'normalized', occurrences: 1 },
+    { value: '8px', origin: 'normalized', occurrences: 1 },
+  ],
+  overview: {
+    style: { label: 'Modern', confidence: 0.5 },
+    consistencyScore: 88,
+    characteristics: ['Rounded corners', '1 elevation level(s)'],
+    counts: { colors: 2, typography: 2, components: 2, tokens: 10 },
+  },
   usage: {
     colors: [
       { value: '#4b74ff', count: 120 },
@@ -146,6 +203,16 @@ describe('exportMarkdown (enriched)', () => {
     expect(md).toContain('### Headings');
     expect(md).toContain('| h1 | 32px | 700 | 40px |');
     expect(md).toContain('### Button');
+  });
+});
+
+describe('exportFigma', () => {
+  it('produces a Tokens Studio global set', () => {
+    const parsed = JSON.parse(exportFigma(t)) as {
+      global: { color: Record<string, { value: string; type: string }> };
+    };
+    expect(parsed.global.color['primary-1']).toEqual({ value: '#4b74ff', type: 'color' });
+    expect(parsed.global.color['text-1']?.type).toBe('color');
   });
 });
 

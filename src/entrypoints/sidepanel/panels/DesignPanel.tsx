@@ -7,6 +7,7 @@ import {
   exportTailwind,
   exportMarkdown,
   exportAgentBrief,
+  exportFigma,
 } from '../../../core/exporters';
 import { useCopy } from '../useCopy';
 import { downloadText } from '../download';
@@ -39,6 +40,13 @@ const FORMATS: Format[] = [
     run: exportJson,
   },
   { key: 'tailwind', label: 'Tailwind', file: 'theme.css', mime: 'text/css', run: exportTailwind },
+  {
+    key: 'figma',
+    label: 'Figma',
+    file: 'peeko-tokens.figma.json',
+    mime: 'application/json',
+    run: exportFigma,
+  },
   {
     key: 'markdown',
     label: 'Markdown',

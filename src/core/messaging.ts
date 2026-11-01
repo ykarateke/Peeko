@@ -30,11 +30,65 @@ export interface TypeStyle {
   size: string;
   weight: string;
   lineHeight: string;
+  letterSpacing?: string;
 }
 
 export interface Count {
   value: string;
   count: number;
+}
+
+export type TokenOrigin = 'extracted' | 'inferred' | 'normalized';
+
+export interface Token {
+  value: string;
+  original?: string;
+  origin: TokenOrigin;
+  occurrences: number;
+  confidence?: number; // 0..1
+  source?: string;
+}
+
+export type ColorGroup =
+  | 'primary'
+  | 'secondary'
+  | 'accent'
+  | 'background'
+  | 'surface'
+  | 'text'
+  | 'border'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info'
+  | 'other';
+
+export interface ColorToken extends Token {
+  hex: string;
+  rgb: string;
+  hsl: string;
+  cssVar: string;
+  group: ColorGroup;
+  onLight: number; // WCAG contrast vs #fff
+  onDark: number; // WCAG contrast vs #111
+  similarTo?: string; // hex of a near-duplicate already in the set
+}
+
+export interface TypeStyleToken {
+  name: string; // Display, H1..H6, Body, Caption, ...
+  size: string;
+  weight: string;
+  lineHeight: string;
+  letterSpacing?: string;
+  origin: TokenOrigin;
+  source?: string;
+}
+
+export interface DesignOverviewInfo {
+  style: { label: string; confidence: number };
+  consistencyScore: number; // 0..100
+  characteristics: string[];
+  counts: { colors: number; typography: number; components: number; tokens: number };
 }
 
 /** Design tokens extracted from the active page (Design panel). */
@@ -60,6 +114,11 @@ export interface DesignTokens {
   components: Record<string, Record<string, string>>; // 'button' | 'link' | 'input' -> prop:value
   baseUnit: string | null; // smallest spacing step
   usage: { colors: Count[]; fontSizes: Count[]; spacing: Count[] }; // value + frequency, for charts
+  // Rich model (Design System Inspection). Flat arrays above are derived from these for exporters.
+  colorTokens: ColorToken[];
+  textStyles: TypeStyleToken[];
+  spacingNormalized: Token[];
+  overview: DesignOverviewInfo;
   meta: { url: string; title: string; elementCount: number; generatedAt: string };
 }
 
