@@ -179,6 +179,31 @@ body {
   margin-top: 9px;
 }
 
+.format-toggle {
+  display: flex;
+  gap: 4px;
+  margin-top: 9px;
+}
+.fmt {
+  flex: 1;
+  padding: 5px 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.fmt:hover {
+  color: var(--text);
+}
+.fmt.is-active {
+  background: var(--pill);
+  color: var(--text);
+}
+
 /* ---------- Swatches ---------- */
 .swatch-grid {
   display: grid;

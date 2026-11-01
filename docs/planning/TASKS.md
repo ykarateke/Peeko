@@ -16,13 +16,13 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 ## M2 — Inspect + Color
 
 - [x] Styles panel wired to **real page extraction** (`core/extract.ts`): palette + fonts + element count from the active tab, via content → background relay; toolbar rescan; loading/restricted states.
-- [~] F2: dominant-palette extraction (done, by frequency) — still needs Pick Color (EyeDropper) + Export Palette + HEX/RGB/HSL toggle.
+- [x] F2: dominant-palette extraction (by frequency).
+- [x] F2: color sampling via `EyeDropper`. _(overlay fallback for unsupported browsers: later)_
+- [x] F2: HEX/RGB/HSL conversion (`core/color.ts`, unit-tested) + copy + Export Palette (CSS).
+- [x] Testing: vitest set up; `core/color.ts` + `toHex` covered (`pnpm test`, 12 tests).
 - [ ] F1: overlay hover/selection layer (Shadow DOM isolated).
 - [ ] F1: `getComputedStyle` reader → `ElementInfo` grouped (typography/color/layout/border-effects).
 - [ ] F1: panel renders groups; one-click copy per value.
-- [ ] F2: color sampling via `EyeDropper` + overlay fallback.
-- [ ] F2: dominant-palette extraction.
-- [ ] F2: HEX/RGB/HSL conversion (pure, unit-tested) + copy/export.
 
 ## M3 — Assets
 

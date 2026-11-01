@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { type FontToken } from '../../../core/messaging';
+import { formatColor, type ColorFormat } from '../../../core/color';
 import {
   PaletteIcon,
   TypeIcon,
@@ -9,6 +10,15 @@ import {
   SearchIcon,
   BookmarkIcon,
 } from '../icons';
+
+interface EyeDropperResult {
+  sRGBHex: string;
+}
+interface EyeDropperCtor {
+  new (): { open: () => Promise<EyeDropperResult> };
+}
+
+const FORMATS: ColorFormat[] = ['hex', 'rgb', 'hsl'];
 
 /** Light color needs a visible border on a light background. */
 function isLight(hex: string): boolean {
@@ -20,15 +30,14 @@ function isLight(hex: string): boolean {
   return 0.299 * r + 0.587 * g + 0.114 * b > 225;
 }
 
-interface Props {
-  colors: string[];
-  fonts: FontToken[];
-}
-
-export function StylesPanel({ colors, fonts }: Props) {
+export function StylesPanel({ colors, fonts }: { colors: string[]; fonts: FontToken[] }) {
   const [copied, setCopied] = useState<string | null>(null);
-  const bigColors = colors.slice(0, 10);
-  const accentColors = colors.slice(10);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [fmt, setFmt] = useState<ColorFormat>('hex');
+
+  const all = [...picked, ...colors];
+  const bigColors = all.slice(0, 10);
+  const accentColors = all.slice(10);
 
   function copy(text: string) {
     navigator.clipboard?.writeText(text).then(
@@ -38,6 +47,31 @@ export function StylesPanel({ colors, fonts }: Props) {
       },
       () => {},
     );
+  }
+
+  async function pickColor() {
+    const Ctor = (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper;
+    // shortcut: no overlay fallback yet; relies on the native EyeDropper (Chrome/Brave/Edge).
+    if (!Ctor) return;
+    try {
+      const { sRGBHex } = await new Ctor().open();
+      setPicked((p) => (p.includes(sRGBHex) ? p : [sRGBHex, ...p]));
+      copy(formatColor(sRGBHex, fmt));
+    } catch {
+      /* user cancelled */
+    }
+  }
+
+  function exportPalette() {
+    if (all.length === 0) return;
+    const body = all.map((c, i) => `  --color-${i + 1}: ${formatColor(c, fmt)};`).join('\n');
+    const css = `:root {\n${body}\n}\n`;
+    const url = URL.createObjectURL(new Blob([css], { type: 'text/css' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'peeko-palette.css';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -56,10 +90,10 @@ export function StylesPanel({ colors, fonts }: Props) {
         {bigColors.map((c, i) => (
           <button
             key={`${c}-${i}`}
-            className={`swatch${isLight(c) ? ' is-light' : ''}${copied === c ? ' is-copied' : ''}`}
+            className={`swatch${isLight(c) ? ' is-light' : ''}${copied === formatColor(c, fmt) ? ' is-copied' : ''}`}
             style={{ background: c }}
-            title={c}
-            onClick={() => copy(c)}
+            title={formatColor(c, fmt)}
+            onClick={() => copy(formatColor(c, fmt))}
           />
         ))}
       </div>
@@ -71,18 +105,30 @@ export function StylesPanel({ colors, fonts }: Props) {
               key={`${c}-${i}`}
               className={`swatch-sm${isLight(c) ? ' is-light' : ''}`}
               style={{ background: c }}
-              title={c}
-              onClick={() => copy(c)}
+              title={formatColor(c, fmt)}
+              onClick={() => copy(formatColor(c, fmt))}
             />
           ))}
         </div>
       )}
 
+      <div className="format-toggle">
+        {FORMATS.map((f) => (
+          <button
+            key={f}
+            className={`fmt${fmt === f ? ' is-active' : ''}`}
+            onClick={() => setFmt(f)}
+          >
+            {f.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
       <div className="btn-row">
-        <button className="btn">
+        <button className="btn" onClick={pickColor}>
           <EyedropperIcon size={14} /> Pick Color
         </button>
-        <button className="btn">
+        <button className="btn" onClick={exportPalette}>
           <DownloadIcon size={14} /> Export Palette
         </button>
       </div>
