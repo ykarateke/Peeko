@@ -27,9 +27,45 @@ const RELAYED: ReadonlySet<Msg['type']> = new Set([
   'STOP_PAGE_RULER',
 ]);
 
+// Track the last focused *normal* browser window so page operations target the real content
+// tab even when the UI runs in a popped-out popup window (not the docked side panel).
+let lastNormalWindowId: number | undefined;
+async function trackWindow(windowId: number) {
+  if (windowId < 0) return;
+  try {
+    const w = await browser.windows.get(windowId);
+    if (w.type === 'normal' && w.id !== undefined) lastNormalWindowId = w.id;
+  } catch {
+    /* ignore */
+  }
+}
+
+/** The active content tab to act on (the last focused normal window), not our own popup. */
+async function getTargetTab() {
+  const tries = [
+    lastNormalWindowId !== undefined ? { active: true, windowId: lastNormalWindowId } : null,
+    { active: true, lastFocusedWindow: true },
+    { active: true, currentWindow: true },
+  ];
+  for (const q of tries) {
+    if (!q) continue;
+    const [tab] = await browser.tabs.query(q).catch(() => []);
+    if (tab?.id !== undefined && !isRestrictedUrl(tab.url)) return tab;
+  }
+  throw new RestrictedTabError();
+}
+
 export default defineBackground(() => {
   // Chrome: open the side panel when the toolbar icon is clicked.
   browser.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true }).catch(() => {});
+
+  browser.windows.onFocusChanged.addListener(trackWindow);
+  browser.windows
+    .getLastFocused()
+    .then((w) => {
+      if (w?.type === 'normal' && w.id !== undefined) lastNormalWindowId = w.id;
+    })
+    .catch(() => {});
 
   // Keyboard shortcut (Alt+Shift+I) -> toggle the inspector on the active tab.
   browser.commands?.onCommand.addListener((command) => {
@@ -45,10 +81,10 @@ export default defineBackground(() => {
       return true;
     }
     if (message.type === 'CAPTURE_SCREENSHOT') {
-      browser.tabs
-        .captureVisibleTab({ format: 'png' })
+      getTargetTab()
+        .then((tab) => browser.tabs.captureVisibleTab(tab.windowId, { format: 'png' }))
         .then((dataUrl) => sendResponse({ ok: true, data: dataUrl }))
-        .catch((err: unknown) => sendResponse({ ok: false, error: String(err) }));
+        .catch((err: unknown) => sendResponse({ ok: false, error: errorKind(err) }));
       return true;
     }
     if (message.type === 'CAPTURE_FULL_PAGE') {
@@ -75,9 +111,8 @@ export default defineBackground(() => {
 
 /** Send a message to the active tab; if the content script isn't there yet, inject it and retry. */
 async function relayToActiveTab(message: Msg): Promise<unknown> {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id || isRestrictedUrl(tab.url)) throw new RestrictedTabError();
-  const tabId = tab.id;
+  const tab = await getTargetTab();
+  const tabId = tab.id!;
 
   try {
     return await browser.tabs.sendMessage(tabId, message);
@@ -101,19 +136,14 @@ async function injectContent(tabId: number): Promise<void> {
 }
 
 /**
- * Full-page screenshot via scroll-and-stitch. Captures in a **temporary full-width window**
- * (not the current tab) so the side panel doesn't narrow the page — the page reloads there,
- * so interactive/logged-in state is not preserved.
+ * Full-page screenshot via scroll-and-stitch on the real content tab (state preserved).
+ * The page's width is whatever the content window is — pop the panel out so the docked
+ * side panel doesn't narrow it.
  */
 async function captureFullPage(): Promise<{ metrics: PageMetrics; tiles: CaptureTile[] }> {
-  const [active] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!active?.url || isRestrictedUrl(active.url)) throw new RestrictedTabError();
-  const originalWindowId = active.windowId;
-
-  const win = await browser.windows.create({ url: active.url, focused: true, state: 'maximized' });
-  const winId = win?.id;
-  const tabId = win?.tabs?.[0]?.id;
-  if (winId === undefined || tabId === undefined) throw new Error('Could not open capture window.');
+  const tab = await getTargetTab();
+  const tabId = tab.id!;
+  const windowId = tab.windowId;
 
   const send = async (msg: Msg): Promise<unknown> => {
     try {
@@ -125,44 +155,20 @@ async function captureFullPage(): Promise<{ metrics: PageMetrics; tiles: Capture
     }
   };
 
+  const metrics = (await send({ type: 'GET_PAGE_METRICS' })) as PageMetrics;
+  await send({ type: 'PREP_CAPTURE' });
+  const tiles: CaptureTile[] = [];
   try {
-    await waitForComplete(tabId);
-    await delay(900); // settle layout + initial lazy-load
-    const metrics = (await send({ type: 'GET_PAGE_METRICS' })) as PageMetrics;
-    await send({ type: 'PREP_CAPTURE' });
-    const tiles: CaptureTile[] = [];
-    try {
-      const offsets = tileOffsets(metrics.scrollHeight, metrics.innerHeight).slice(0, MAX_TILES);
-      for (const y of offsets) {
-        await send({ type: 'SCROLL_TO', y });
-        await delay(CAPTURE_DELAY);
-        tiles.push({ y, dataUrl: await browser.tabs.captureVisibleTab(winId, { format: 'png' }) });
-      }
-    } finally {
-      await send({ type: 'END_CAPTURE' }).catch(() => {});
+    const offsets = tileOffsets(metrics.scrollHeight, metrics.innerHeight).slice(0, MAX_TILES);
+    for (const y of offsets) {
+      await send({ type: 'SCROLL_TO', y });
+      await delay(CAPTURE_DELAY);
+      tiles.push({ y, dataUrl: await browser.tabs.captureVisibleTab(windowId, { format: 'png' }) });
     }
-    return { metrics, tiles };
   } finally {
-    await browser.windows.remove(winId).catch(() => {});
-    await browser.windows.update(originalWindowId, { focused: true }).catch(() => {});
+    await send({ type: 'END_CAPTURE' }).catch(() => {});
   }
-}
-
-/** Resolve once a tab finishes loading (bounded wait). */
-function waitForComplete(tabId: number, timeout = 15000): Promise<void> {
-  return new Promise((resolve) => {
-    const start = Date.now();
-    const check = async () => {
-      try {
-        const t = await browser.tabs.get(tabId);
-        if (t.status === 'complete' || Date.now() - start > timeout) return resolve();
-      } catch {
-        return resolve();
-      }
-      setTimeout(check, 200);
-    };
-    check();
-  });
+  return { metrics, tiles };
 }
 
 /** Open the active tab's URL in a device-sized popup window. */
@@ -170,8 +176,7 @@ async function openDeviceWindow(payload: unknown): Promise<void> {
   const size = payload as { width?: number; height?: number };
   const width = Math.round(size?.width ?? 390);
   const height = Math.round(size?.height ?? 844);
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.url || isRestrictedUrl(tab.url)) throw new RestrictedTabError();
+  const tab = await getTargetTab();
   await browser.windows.create({ url: tab.url, type: 'popup', width, height });
 }
 

@@ -128,6 +128,19 @@ export function App() {
     setView(null);
   }
 
+  function popOut() {
+    browser.windows
+      ?.create({
+        url: browser.runtime.getURL('/sidepanel.html'),
+        type: 'popup',
+        width: 440,
+        height: 860,
+        focused: true,
+      })
+      .then(() => window.close())
+      .catch(() => {});
+  }
+
   const count = styles.state === 'ready' ? styles.data.elementCount : null;
   const assetBadge = assets.state === 'ready' ? assets.data.length : undefined;
 
@@ -142,6 +155,7 @@ export function App() {
         onCapture={() => pickTab('Export')}
         onSettings={() => setView('settings')}
         onRescan={refresh}
+        onPopOut={popOut}
       />
       <Tabs active={tab} onChange={pickTab} badges={{ Assets: assetBadge }} />
 

@@ -5,6 +5,7 @@ import {
   RefreshIcon,
   CameraIcon,
   GearIcon,
+  PopOutIcon,
   CollapseIcon,
 } from './icons';
 
@@ -17,6 +18,7 @@ interface Props {
   onCapture: () => void;
   onSettings: () => void;
   onRescan: () => void;
+  onPopOut: () => void;
 }
 
 export function Toolbar({
@@ -28,6 +30,7 @@ export function Toolbar({
   onCapture,
   onSettings,
   onRescan,
+  onPopOut,
 }: Props) {
   return (
     <div className="toolbar">
@@ -56,6 +59,9 @@ export function Toolbar({
       </button>
       <button className="icon-btn" title="Settings" onClick={onSettings}>
         <GearIcon />
+      </button>
+      <button className="icon-btn" title="Pop out (full-width captures)" onClick={onPopOut}>
+        <PopOutIcon />
       </button>
       <button className="icon-btn" title="Close panel" onClick={() => window.close()}>
         <CollapseIcon />

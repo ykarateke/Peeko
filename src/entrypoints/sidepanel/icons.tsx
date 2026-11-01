@@ -96,6 +96,13 @@ export const CameraIcon = (p: P) => (
     <circle cx="12" cy="13" r="3.5" />
   </Svg>
 );
+export const PopOutIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M14 4h6v6" />
+    <path d="M20 4l-8 8" />
+    <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+  </Svg>
+);
 export const GearIcon = (p: P) => (
   <Svg {...p}>
     <circle cx="12" cy="12" r="3" />
