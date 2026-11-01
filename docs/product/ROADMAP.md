@@ -2,6 +2,8 @@
 
 Incremental milestones toward v1. Each milestone must end with a **green build on both targets** (`chrome`, `firefox`) and the relevant acceptance criteria met ([`ACCEPTANCE_CRITERIA.md`](ACCEPTANCE_CRITERIA.md)).
 
+**Status (2026-11-01):** M1–M6 features implemented (F1–F8). Remaining before public release: store assets/icons + privacy forms, and a full manual smoke pass. See [`../planning/TASKS.md`](../planning/TASKS.md).
+
 | Milestone | Scope | Delivers |
 |-----------|-------|----------|
 | **M1 — Skeleton** | WXT setup, side panel + background relay + content injection (empty UI) | Loadable extension; panel ↔ page messaging works; resilient-messaging + `RestrictedTabError` in place |
@@ -13,11 +15,11 @@ Incremental milestones toward v1. Each milestone must end with a **green build o
 
 ## v1 definition of done
 
-- F1–F5 fully functional on Chrome + Firefox.
-- F6–F8 present (P1) and stable.
-- Zero external network calls (verified).
-- CI green: lint + typecheck + exporter tests + `wxt build` on both targets.
-- Release package prepared per [`DEPLOYMENT.md`](../operations/DEPLOYMENT.md).
+- [x] F1–F5 implemented on Chrome + Firefox.
+- [x] F6–F8 (P1) implemented.
+- [x] Zero extension-initiated network calls (structural; verify per release).
+- [x] typecheck + unit tests + `wxt build` green on both targets. _(lint/CI config: TODO)_
+- [ ] Release package prepared per [`DEPLOYMENT.md`](../operations/DEPLOYMENT.md).
 
 ## Post-v1 candidates (P2)
 

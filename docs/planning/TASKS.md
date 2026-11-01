@@ -41,17 +41,17 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 
 ## M5 — Simulator
 
-- [ ] F5: `devices.ts` profiles (phone/tablet/desktop/watch) + custom size.
-- [ ] F5: viewport application in fixed host div; DPR, orientation, zoom.
-- [ ] F5: best-effort UA spoofing (`declarativeNetRequest`) or documented viewport-only fallback.
-- [ ] F5: clean restore on deactivate.
+- [x] F5: `devices.ts` profiles (phone/tablet/desktop/watch) + orientation swap.
+- [x] F5: device-sized **popup window** via `windows.create` (reliable on every site). _(in-page viewport scaling not used — see ADR note)_
+- [~] F5: UA spoofing not forced (documented limitation); DPR informational only.
+- [x] F5: opens the current URL; restricted pages surface `RestrictedTabError`.
 
 ## M6 — Measure / Capture + Settings + Release
 
-- [ ] F6: ruler/measurement + alignment guides (`devicePixelRatio`-accurate).
-- [ ] F7: screenshot — visible area (`captureVisibleTab`), element, region → PNG.
-- [ ] F8: Settings UI + `chrome.storage.local` prefs (see [`../engineering/DATABASE.md`](../engineering/DATABASE.md)).
-- [ ] Release: store assets, privacy forms (see [`../operations/DEPLOYMENT.md`](../operations/DEPLOYMENT.md)).
+- [x] F6: drag-to-measure ruler + crosshair guides (Shadow-DOM overlay `core/ruler.ts`); ESC/toggle exit; mutually exclusive with inspect.
+- [x] F7: screenshot — visible area (`captureVisibleTab`) + selected-element crop (canvas, `rect×dpr`). _(region drag: next)_
+- [x] F8: Settings UI + `core/prefs.ts` (`storage.local`, see [`../engineering/DATABASE.md`](../engineering/DATABASE.md)) — theme (incl. **dark mode**), default color format, download folder, default export; wired into panels.
+- [ ] Release: store assets + icons, privacy forms (see [`../operations/DEPLOYMENT.md`](../operations/DEPLOYMENT.md)).
 - [ ] Full manual smoke on Chrome + Firefox; Network zero-request verification.
 
 ## Cross-cutting (any time)

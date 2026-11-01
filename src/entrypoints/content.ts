@@ -110,11 +110,13 @@ export default defineContentScript({
           sendResponse({ inspecting });
           return true;
         case 'TOGGLE_PAGE_RULER':
+          if (!isTopFrame) return undefined; // one ruler, in the top frame only
           if (ruler) stopRuler(false);
           else startRuler();
           sendResponse({ active: ruler !== null });
           return true;
         case 'STOP_PAGE_RULER':
+          if (!isTopFrame) return undefined;
           stopRuler(false);
           sendResponse({ active: false });
           return true;

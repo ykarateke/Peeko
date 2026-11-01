@@ -18,7 +18,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Inspect panel (F1):** click any element to read its `getComputedStyle` grouped into Typography / Color / Layout / Border & Effects (`core/inspect.ts`), with a Shadow-DOM hover/selection highlight (`core/highlight.ts`), one-click copy per value, color swatches, and Copy-all-as-CSS. Multi-select; ESC or toggle to exit; `Alt+Shift+I` keyboard shortcut.
 - **Shared `useCopy` hook** — Styles and Assets refactored onto it.
 - **Design System panel (F4):** extracts tokens from the page — colors + semantic roles, type scale, weights, line-heights, spacing, radii, shadows, gradients, breakpoints (`core/tokens.ts`) — and exports to **CSS, SCSS, JSON (W3C DTCG-style), Tailwind v4 `@theme`, Markdown**, plus an **AI Agent Brief** (LLM-ready Markdown analysis an agent can use to rebuild the design) (`core/exporters.ts`). Live preview, copy, per-format download. Shared `download.ts` helper.
-- **Testing:** vitest; `core/color.ts`, `core/inspect.ts` and `toHex` covered (`pnpm test`, 16 tests).
+- **Device Simulator (F5):** device profiles (phone/tablet/desktop/watch, `core/devices.ts`) opened in a device-sized popup window via `windows.create`, with portrait/landscape.
+- **Measure / Ruler (F6):** drag-to-measure overlay with crosshair guides and px/Δx×Δy readout (`core/ruler.ts`, Shadow DOM); mutually exclusive with inspect.
+- **Screenshot (F7):** capture visible area (`captureVisibleTab`) to PNG, plus selected-element crop from the Inspect panel (canvas, `rect×dpr`).
+- **Settings + dark mode (F8):** `core/prefs.ts` (`storage.local`) — theme (system/light/**dark**), default color format, download folder, default export format — surfaced in a Settings view and wired into the panels; full dark theme via CSS variables.
+- Toolbar now drives Simulator / Screenshot / Settings as views (the 4 tabs stay); collapse closes the panel.
+- **Testing:** vitest; `core/color.ts`, `core/inspect.ts`, `core/exporters.ts`, `core/prefs.ts` and `toHex` covered (`pnpm test`, 27 tests).
 
 ### Planned
 See [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md) for the milestone plan (M1–M6) toward v1.
