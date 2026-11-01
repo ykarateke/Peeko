@@ -50,7 +50,8 @@ export async function setPrefs(patch: Partial<Preferences>): Promise<Preferences
 
 export function onPrefsChanged(cb: (prefs: Preferences) => void): () => void {
   const listener = (changes: Record<string, { newValue?: unknown }>, area: string) => {
-    if (area === 'local' && changes.prefs) cb(mergePrefs(changes.prefs.newValue as Partial<Preferences>));
+    if (area === 'local' && changes.prefs)
+      cb(mergePrefs(changes.prefs.newValue as Partial<Preferences>));
   };
   browser.storage.onChanged.addListener(listener);
   return () => browser.storage.onChanged.removeListener(listener);

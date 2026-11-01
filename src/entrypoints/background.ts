@@ -18,9 +18,7 @@ const RELAYED: ReadonlySet<Msg['type']> = new Set([
 
 export default defineBackground(() => {
   // Chrome: open the side panel when the toolbar icon is clicked.
-  browser.sidePanel
-    ?.setPanelBehavior?.({ openPanelOnActionClick: true })
-    .catch(() => {});
+  browser.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true }).catch(() => {});
 
   // Keyboard shortcut (Alt+Shift+I) -> toggle the inspector on the active tab.
   browser.commands?.onCommand.addListener((command) => {

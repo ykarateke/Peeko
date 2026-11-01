@@ -1,0 +1,7 @@
+.output
+.wxt
+node_modules
+dist
+public
+pnpm-lock.yaml
+CHANGELOG.md

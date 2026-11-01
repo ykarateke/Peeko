@@ -58,3 +58,13 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 
 - [ ] Keep docs in sync with code (docs are authoritative).
 - [ ] Maintain [`../../CHANGELOG.md`](../../CHANGELOG.md).
+
+## Engineering hardening (done)
+
+- [x] ESLint (flat) + Prettier; `pnpm lint` / `format` / `check`. TypeScript pinned to 5.9.
+- [x] CI workflow (lint + typecheck + test + both builds).
+- [x] Vitest scoped to `src/**/*.test.ts`; 51 unit tests across color/exporters/inspect/prefs/assets/tokens/devices.
+- [x] Playwright E2E smoke scaffold (`e2e/`, `pnpm test:e2e`) — needs `playwright install chromium` to run.
+- [x] A11y: focus-visible, prefers-reduced-motion, dark asset thumbnails.
+- [ ] Run the E2E smoke in CI (needs a headful/new-headless Chromium step).
+- [ ] i18n (UI strings are hardcoded English).

@@ -27,7 +27,10 @@ export default defineContentScript({
       raf = requestAnimationFrame(() => {
         if (!highlighter || !hovered) return;
         const r = hovered.getBoundingClientRect();
-        highlighter.showHover(r, `${tag(hovered)} · ${Math.round(r.width)}×${Math.round(r.height)}`);
+        highlighter.showHover(
+          r,
+          `${tag(hovered)} · ${Math.round(r.width)}×${Math.round(r.height)}`,
+        );
       });
     };
 
@@ -62,6 +65,8 @@ export default defineContentScript({
       window.addEventListener('keydown', onKey, true);
       window.addEventListener('scroll', reposition, true);
       window.addEventListener('resize', reposition, true);
+      // Tell the panel (covers starts via keyboard command while the panel is open).
+      browser.runtime.sendMessage({ type: 'INSPECTOR_STARTED' }).catch(() => {});
     }
 
     function stop(notify: boolean) {
@@ -92,7 +97,8 @@ export default defineContentScript({
       if (!ruler) return;
       ruler.destroy();
       ruler = null;
-      if (notify) browser.runtime.sendMessage({ type: 'RULER_STATE_CHANGED', active: false }).catch(() => {});
+      if (notify)
+        browser.runtime.sendMessage({ type: 'RULER_STATE_CHANGED', active: false }).catch(() => {});
     }
 
     browser.runtime.onMessage.addListener((message: Msg, _sender, sendResponse) => {

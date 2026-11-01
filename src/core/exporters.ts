@@ -10,13 +10,19 @@ type Pair = [string, string];
 function baseGroups(t: DesignTokens): { title: string; pairs: Pair[] }[] {
   return [
     { title: 'Colors', pairs: t.colors.map((c, i): Pair => [`color-${i + 1}`, c]) },
-    { title: 'Color roles', pairs: Object.entries(t.roles).map(([k, v]): Pair => [`color-${k}`, v]) },
+    {
+      title: 'Color roles',
+      pairs: Object.entries(t.roles).map(([k, v]): Pair => [`color-${k}`, v]),
+    },
     {
       title: 'Font families',
       pairs: t.fontFamilies.map((f, i): Pair => [`font-${i + 1}`, `${quoteFamily(f)}, sans-serif`]),
     },
     { title: 'Font sizes', pairs: t.fontSizes.map((s, i): Pair => [`text-${i + 1}`, s]) },
-    { title: 'Font weights', pairs: t.fontWeights.map((w, i): Pair => [`weight-${i + 1}`, String(w)]) },
+    {
+      title: 'Font weights',
+      pairs: t.fontWeights.map((w, i): Pair => [`weight-${i + 1}`, String(w)]),
+    },
     { title: 'Line heights', pairs: t.lineHeights.map((l, i): Pair => [`leading-${i + 1}`, l]) },
     { title: 'Spacing', pairs: t.spacing.map((s, i): Pair => [`space-${i + 1}`, s]) },
     { title: 'Radii', pairs: t.radii.map((r, i): Pair => [`radius-${i + 1}`, r]) },
@@ -56,15 +62,45 @@ export function exportTailwind(t: DesignTokens): string {
     out.push(`  /* ${title} */`);
     for (const [k, v] of pairs) out.push(`  --${k}: ${v};`);
   };
-  sec('Colors', t.colors.map((c, i): Pair => [`color-${i + 1}`, c]));
-  sec('Color roles', Object.entries(t.roles).map(([k, v]): Pair => [`color-${k}`, v]));
-  sec('Fonts', t.fontFamilies.map((f, i): Pair => [i === 0 ? 'font-sans' : `font-${i + 1}`, `${quoteFamily(f)}, sans-serif`]));
-  sec('Text sizes', t.fontSizes.map((s, i): Pair => [`text-${i + 1}`, s]));
-  sec('Spacing', t.spacing.map((s, i): Pair => [`spacing-${i + 1}`, s]));
-  sec('Radius', t.radii.map((r, i): Pair => [`radius-${i + 1}`, r]));
-  sec('Shadow', t.shadows.map((s, i): Pair => [`shadow-${i + 1}`, s]));
-  sec('Containers', t.containers.map((c, i): Pair => [`container-${i + 1}`, c]));
-  sec('Easings', t.easings.map((e, i): Pair => [`ease-${i + 1}`, e]));
+  sec(
+    'Colors',
+    t.colors.map((c, i): Pair => [`color-${i + 1}`, c]),
+  );
+  sec(
+    'Color roles',
+    Object.entries(t.roles).map(([k, v]): Pair => [`color-${k}`, v]),
+  );
+  sec(
+    'Fonts',
+    t.fontFamilies.map((f, i): Pair => [
+      i === 0 ? 'font-sans' : `font-${i + 1}`,
+      `${quoteFamily(f)}, sans-serif`,
+    ]),
+  );
+  sec(
+    'Text sizes',
+    t.fontSizes.map((s, i): Pair => [`text-${i + 1}`, s]),
+  );
+  sec(
+    'Spacing',
+    t.spacing.map((s, i): Pair => [`spacing-${i + 1}`, s]),
+  );
+  sec(
+    'Radius',
+    t.radii.map((r, i): Pair => [`radius-${i + 1}`, r]),
+  );
+  sec(
+    'Shadow',
+    t.shadows.map((s, i): Pair => [`shadow-${i + 1}`, s]),
+  );
+  sec(
+    'Containers',
+    t.containers.map((c, i): Pair => [`container-${i + 1}`, c]),
+  );
+  sec(
+    'Easings',
+    t.easings.map((e, i): Pair => [`ease-${i + 1}`, e]),
+  );
   out.push('}');
   return out.join('\n') + '\n';
 }
@@ -117,7 +153,8 @@ export function exportMarkdown(t: DesignTokens): string {
 
   if (Object.keys(t.roles).length) {
     L.push('## Color roles', '', '| Role | Value | Use for |', '| --- | --- | --- |');
-    for (const [k, v] of Object.entries(t.roles)) L.push(`| ${k} | \`${v}\` | ${ROLE_USE[k] ?? '—'} |`);
+    for (const [k, v] of Object.entries(t.roles))
+      L.push(`| ${k} | \`${v}\` | ${ROLE_USE[k] ?? '—'} |`);
     L.push('');
   }
   L.push('## Colors', '', t.colors.map((c) => `\`${c}\``).join(' ') || '_none_', '');
@@ -182,7 +219,8 @@ export function exportAgentBrief(t: DesignTokens): string {
   L.push('## Color system', '');
   if (Object.keys(t.roles).length) {
     L.push('### Roles', '', '| Role | Value | Use for |', '| --- | --- | --- |');
-    for (const [k, v] of Object.entries(t.roles)) L.push(`| ${k} | \`${v}\` | ${ROLE_USE[k] ?? '—'} |`);
+    for (const [k, v] of Object.entries(t.roles))
+      L.push(`| ${k} | \`${v}\` | ${ROLE_USE[k] ?? '—'} |`);
     const c = contrastNote(t);
     L.push('', ...(c ? [`Contrast — ${c}`, ''] : []));
   }
@@ -199,7 +237,8 @@ export function exportAgentBrief(t: DesignTokens): string {
   L.push('## Spacing & layout', '');
   L.push(`- **Spacing scale:** ${t.spacing.length ? list(t.spacing) : '_none_'}${baseNote(t)}`);
   if (t.breakpoints.length) L.push(`- **Breakpoints:** ${list(t.breakpoints)}`);
-  if (t.containers.length) L.push(`- **Container max-width:** ${list(t.containers)} — cap page content at the largest.`);
+  if (t.containers.length)
+    L.push(`- **Container max-width:** ${list(t.containers)} — cap page content at the largest.`);
   L.push('');
 
   if (t.durations.length || t.easings.length || t.animations.length) {
@@ -224,11 +263,13 @@ export function exportAgentBrief(t: DesignTokens): string {
   L.push(
     '**Do**',
     '- Use only the colors in the palette/roles above; map roles to intent (background, text, accent, link).',
-    t.baseUnit ? `- Base every gap, padding and margin on multiples of \`${t.baseUnit}\`.` : '- Keep spacing on the scale above.',
+    t.baseUnit
+      ? `- Base every gap, padding and margin on multiples of \`${t.baseUnit}\`.`
+      : '- Keep spacing on the scale above.',
     '- Use the listed font families; size headings per the Headings table, body per the body size.',
     '- Reuse the listed radii and shadows so elevation and shape stay consistent.',
     '',
-    '**Don\'t**',
+    "**Don't**",
     '- Introduce new fonts, arbitrary hex colors, or off-scale spacing/font sizes.',
     '- Enlarge headings beyond the scale, or add shadows/radii not listed.',
     '- Invent component styles that contradict the Components section.',
@@ -256,7 +297,12 @@ function baseNote(t: DesignTokens): string {
 function headingSection(t: DesignTokens): string[] {
   const keys = Object.keys(t.headings);
   if (!keys.length) return [];
-  const rows = ['### Headings', '', '| Element | Size | Weight | Line height |', '| --- | --- | --- | --- |'];
+  const rows = [
+    '### Headings',
+    '',
+    '| Element | Size | Weight | Line height |',
+    '| --- | --- | --- | --- |',
+  ];
   for (const k of keys) {
     const s = t.headings[k] as TypeStyle;
     rows.push(`| ${k} | ${s.size} | ${s.weight} | ${s.lineHeight} |`);
@@ -296,10 +342,13 @@ function componentSections(t: DesignTokens): string[] {
 
 function principles(t: DesignTokens): string[] {
   const out: string[] = [];
-  if (t.baseUnit) out.push(`- **Spacing rhythm:** base unit ≈ \`${t.baseUnit}\`; scale ${list(t.spacing)}.`);
+  if (t.baseUnit)
+    out.push(`- **Spacing rhythm:** base unit ≈ \`${t.baseUnit}\`; scale ${list(t.spacing)}.`);
   if (t.radii.length) {
     const sharp = t.radii.every((r) => (parseFloat(r) || 0) <= 4);
-    out.push(`- **Corners:** ${sharp ? 'sharp / minimal rounding' : 'rounded'} (${list(t.radii)}).`);
+    out.push(
+      `- **Corners:** ${sharp ? 'sharp / minimal rounding' : 'rounded'} (${list(t.radii)}).`,
+    );
   } else {
     out.push('- **Corners:** square — no border-radius detected.');
   }
@@ -308,7 +357,9 @@ function principles(t: DesignTokens): string[] {
   if (first && last && t.fontSizes.length >= 2) {
     out.push(`- **Type scale:** ${t.fontSizes.length} sizes, from ${first} to ${last}.`);
   }
-  out.push(`- **Elevation:** ${t.shadows.length ? `${t.shadows.length} shadow level(s)` : 'flat — no shadows'}.`);
+  out.push(
+    `- **Elevation:** ${t.shadows.length ? `${t.shadows.length} shadow level(s)` : 'flat — no shadows'}.`,
+  );
   return out;
 }
 

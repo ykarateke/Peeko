@@ -13,7 +13,8 @@ describe('formatColor', () => {
   it('rgb', () => expect(formatColor('#4b74ff', 'rgb')).toBe('rgb(75, 116, 255)'));
   it('hsl white', () => expect(formatColor('#ffffff', 'hsl')).toBe('hsl(0, 0%, 100%)'));
   it('hsl red', () => expect(formatColor('#ff0000', 'hsl')).toBe('hsl(0, 100%, 50%)'));
-  it('returns input unchanged when unparseable', () => expect(formatColor('xyz', 'rgb')).toBe('xyz'));
+  it('returns input unchanged when unparseable', () =>
+    expect(formatColor('xyz', 'rgb')).toBe('xyz'));
 });
 
 describe('contrastRatio / wcagLevel', () => {

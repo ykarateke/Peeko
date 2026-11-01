@@ -32,11 +32,21 @@ const t: DesignTokens = {
   body: { size: '16px', weight: '400', lineHeight: '24px' },
   bodyColor: '#111111',
   components: {
-    button: { 'background-color': '#4b74ff', color: '#ffffff', 'border-radius': '8px', padding: '8px 16px' },
+    button: {
+      'background-color': '#4b74ff',
+      color: '#ffffff',
+      'border-radius': '8px',
+      padding: '8px 16px',
+    },
     link: { color: '#4b74ff', 'text-decoration-line': 'underline' },
   },
   baseUnit: '4px',
-  meta: { url: 'https://x.test', title: 'X', elementCount: 10, generatedAt: '2026-01-01T00:00:00Z' },
+  meta: {
+    url: 'https://x.test',
+    title: 'X',
+    elementCount: 10,
+    generatedAt: '2026-01-01T00:00:00Z',
+  },
 };
 
 describe('exportCss', () => {
@@ -46,7 +56,8 @@ describe('exportCss', () => {
     expect(css).toContain('--color-1: #4b74ff;');
     expect(css).toContain('--color-background: #ffffff;');
   });
-  it('quotes multi-word families', () => expect(css).toContain("--font-2: 'Mona Sans', sans-serif;"));
+  it('quotes multi-word families', () =>
+    expect(css).toContain("--font-2: 'Mona Sans', sans-serif;"));
 });
 
 describe('exportScss', () => {

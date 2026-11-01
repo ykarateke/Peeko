@@ -4,9 +4,9 @@ Peeko ships as a browser extension to the Chrome Web Store and Firefox Add-ons (
 
 ## Builds
 
-| Command | Output |
-|---------|--------|
-| `pnpm build` | `.output/chrome-mv3` |
+| Command              | Output                |
+| -------------------- | --------------------- |
+| `pnpm build`         | `.output/chrome-mv3`  |
 | `pnpm build:firefox` | `.output/firefox-mv3` |
 
 WXT generates the per-target manifest (MV3). `pnpm zip` / `pnpm zip:firefox` produce the upload artifacts in `.output/`:

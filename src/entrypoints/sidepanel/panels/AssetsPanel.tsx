@@ -132,7 +132,9 @@ export function AssetsPanel({
               {THUMBABLE.has(a.type) ? (
                 <img src={a.url} alt={a.name} loading="lazy" />
               ) : (
-                <span className="asset-glyph">{a.type === 'font' ? 'Aa' : a.type.toUpperCase()}</span>
+                <span className="asset-glyph">
+                  {a.type === 'font' ? 'Aa' : a.type.toUpperCase()}
+                </span>
               )}
               <span className="asset-type">{a.type}</span>
             </div>

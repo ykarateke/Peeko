@@ -71,7 +71,9 @@ export function SettingsPanel({ prefs, onChange }: Props) {
         </select>
       </div>
 
-      <p className="view-note">Stored on this device only (storage.local). Zero sync, zero telemetry.</p>
+      <p className="view-note">
+        Stored on this device only (storage.local). Zero sync, zero telemetry.
+      </p>
     </>
   );
 }

@@ -4,21 +4,21 @@ Incremental milestones toward v1. Each milestone must end with a **green build o
 
 **Status (2026-11-01):** M1–M6 features implemented (F1–F8). Remaining before public release: store assets/icons + privacy forms, and a full manual smoke pass. See [`../planning/TASKS.md`](../planning/TASKS.md).
 
-| Milestone | Scope | Delivers |
-|-----------|-------|----------|
-| **M1 — Skeleton** | WXT setup, side panel + background relay + content injection (empty UI) | Loadable extension; panel ↔ page messaging works; resilient-messaging + `RestrictedTabError` in place |
-| **M2 — Inspect + Color** | F1 Element Inspector, F2 Color Picker & Palette | Hover/select, grouped `getComputedStyle`, one-click copy; EyeDropper + palette extraction + HEX/RGB/HSL |
-| **M3 — Assets** | F3 Asset Extraction + ZIP download | List/preview/download images, SVG, icons, videos, Lottie, fonts; bulk ZIP via JSZip |
-| **M4 — Design System** | F4 Design System Generator | Token extraction + export to CSS/SCSS/JSON/Tailwind/Markdown (unit-tested exporters) |
-| **M5 — Simulator** | F5 Device Simulator | Device profiles, orientation, zoom, DPR; UA spoofing where feasible |
-| **M6 — Measure/Capture + Settings + Release** | F6 Measurement, F7 Screenshot, F8 Settings, release packaging | Ruler, PNG capture, preferences in `storage.local`; store/AMO submission package |
+| Milestone                                     | Scope                                                                   | Delivers                                                                                                |
+| --------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **M1 — Skeleton**                             | WXT setup, side panel + background relay + content injection (empty UI) | Loadable extension; panel ↔ page messaging works; resilient-messaging + `RestrictedTabError` in place   |
+| **M2 — Inspect + Color**                      | F1 Element Inspector, F2 Color Picker & Palette                         | Hover/select, grouped `getComputedStyle`, one-click copy; EyeDropper + palette extraction + HEX/RGB/HSL |
+| **M3 — Assets**                               | F3 Asset Extraction + ZIP download                                      | List/preview/download images, SVG, icons, videos, Lottie, fonts; bulk ZIP via JSZip                     |
+| **M4 — Design System**                        | F4 Design System Generator                                              | Token extraction + export to CSS/SCSS/JSON/Tailwind/Markdown (unit-tested exporters)                    |
+| **M5 — Simulator**                            | F5 Device Simulator                                                     | Device profiles, orientation, zoom, DPR; UA spoofing where feasible                                     |
+| **M6 — Measure/Capture + Settings + Release** | F6 Measurement, F7 Screenshot, F8 Settings, release packaging           | Ruler, PNG capture, preferences in `storage.local`; store/AMO submission package                        |
 
 ## v1 definition of done
 
 - [x] F1–F5 implemented on Chrome + Firefox.
 - [x] F6–F8 (P1) implemented.
 - [x] Zero extension-initiated network calls (structural; verify per release).
-- [x] typecheck + unit tests + `wxt build` green on both targets. _(lint/CI config: TODO)_
+- [x] lint + typecheck + unit tests (51) + `wxt build` green on both targets; CI workflow + Playwright E2E scaffold in place.
 - [ ] Release package prepared per [`DEPLOYMENT.md`](../operations/DEPLOYMENT.md).
 
 ## Post-v1 candidates (P2)

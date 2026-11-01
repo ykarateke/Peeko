@@ -4,15 +4,15 @@
 
 ## 1. Technology stack
 
-| Layer | Choice | Rationale |
-|-------|--------|-----------|
-| Extension framework | **WXT** (`wxt.dev`) | MV3 + Chrome/Firefox from one source, HMR, `createIsolatedElement` (Shadow DOM) built-in |
-| UI | **React + TypeScript** | Panel and overlay in React |
-| Bundler | **Vite** (inside WXT) | Code-splitting (lazy-load panel components) |
-| Styling | CSS Modules / Tailwind (optional) | Isolated CSS is mandatory for the overlay |
-| ZIP | **JSZip** | Bulk asset download |
-| Lint/format | ESLint + Prettier | — |
-| Package manager | pnpm | — |
+| Layer               | Choice                            | Rationale                                                                                |
+| ------------------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
+| Extension framework | **WXT** (`wxt.dev`)               | MV3 + Chrome/Firefox from one source, HMR, `createIsolatedElement` (Shadow DOM) built-in |
+| UI                  | **React + TypeScript**            | Panel and overlay in React                                                               |
+| Bundler             | **Vite** (inside WXT)             | Code-splitting (lazy-load panel components)                                              |
+| Styling             | CSS Modules / Tailwind (optional) | Isolated CSS is mandatory for the overlay                                                |
+| ZIP                 | **JSZip**                         | Bulk asset download                                                                      |
+| Lint/format         | ESLint + Prettier                 | —                                                                                        |
+| Package manager     | pnpm                              | —                                                                                        |
 
 > No backend, auth, payment, or telemetry. The `identity` permission is not needed.
 
@@ -48,22 +48,32 @@ A `type`-based, **typed** protocol. A single union in `src/core/messaging.ts`:
 
 ```ts
 type Msg =
-  | { type: "TOGGLE_INSPECT" } | { type: "STOP_INSPECT" } | { type: "GET_INSPECT_STATUS" }
-  | { type: "ELEMENT_CLICKED"; data: ElementInfo } | { type: "INSPECTOR_STOPPED" }
-  | { type: "OPEN_OVERLAY"; tabId?: number }
-  | { type: "START_COLOR_PICKER" } | { type: "COLOR_PICKED"; color: string }
-  | { type: "TOGGLE_PAGE_RULER" } | { type: "STOP_PAGE_RULER" }
-  | { type: "CAPTURE_SCREENSHOT" } | { type: "CAPTURE_ELEMENT_SCREENSHOT" } | { type: "EXPORT_SECTION" }
-  | { type: "DOWNLOAD_IMAGE"; url: string; filename: string }
-  | { type: "DOWNLOAD_FONT"; url: string; filename: string }
-  | { type: `SIMULATOR_${"ACTIVATE"|"DEACTIVATE"|"STATUS"|"CHANGE_DEVICE"|"TOGGLE_ORIENTATION"|"ZOOM"}`; payload?: unknown };
+  | { type: 'TOGGLE_INSPECT' }
+  | { type: 'STOP_INSPECT' }
+  | { type: 'GET_INSPECT_STATUS' }
+  | { type: 'ELEMENT_CLICKED'; data: ElementInfo }
+  | { type: 'INSPECTOR_STOPPED' }
+  | { type: 'OPEN_OVERLAY'; tabId?: number }
+  | { type: 'START_COLOR_PICKER' }
+  | { type: 'COLOR_PICKED'; color: string }
+  | { type: 'TOGGLE_PAGE_RULER' }
+  | { type: 'STOP_PAGE_RULER' }
+  | { type: 'CAPTURE_SCREENSHOT' }
+  | { type: 'CAPTURE_ELEMENT_SCREENSHOT' }
+  | { type: 'EXPORT_SECTION' }
+  | { type: 'DOWNLOAD_IMAGE'; url: string; filename: string }
+  | { type: 'DOWNLOAD_FONT'; url: string; filename: string }
+  | {
+      type: `SIMULATOR_${'ACTIVATE' | 'DEACTIVATE' | 'STATUS' | 'CHANGE_DEVICE' | 'TOGGLE_ORIENTATION' | 'ZOOM'}`;
+      payload?: unknown;
+    };
 ```
 
 The full per-message reference (direction, payload, response) is in [`../engineering/API_SPEC.md`](../engineering/API_SPEC.md).
 
 ## 4. Background service worker
 
-- **Resilient relay:** if `tabs.sendMessage` returns *"receiving end does not exist"*, inject `content.ts` and retry; on restricted pages throw `RestrictedTabError` with a polite message (see [`ARCHITECTURE.md`](ARCHITECTURE.md) §5).
+- **Resilient relay:** if `tabs.sendMessage` returns _"receiving end does not exist"_, inject `content.ts` and retry; on restricted pages throw `RestrictedTabError` with a polite message (see [`ARCHITECTURE.md`](ARCHITECTURE.md) §5).
 - **Script injection:** `OPEN_OVERLAY` → inject overlay + CSS; `SIMULATOR_*` → inject simulator (first probe with `SIMULATOR_STATUS`).
 - **Downloads:** `DOWNLOAD_IMAGE`/`DOWNLOAD_FONT` → `downloads.download({ filename: "Peeko/..." })`.
 - **Screenshots:** `CAPTURE_SCREENSHOT` → `tabs.captureVisibleTab`.
@@ -73,12 +83,15 @@ The full per-message reference (direction, payload, response) is in [`../enginee
 ## 5. Content scripts
 
 ### content.ts (each frame, automatic)
+
 The inspection engine. Hover/selection, `getComputedStyle` reading, measurement, ruler, color-picker bridge. Uses `devicePixelRatio` for precise pixel measurement. Kept lightweight; heavy UI is moved to the overlay.
 
 ### overlay (injected on demand)
+
 In-page React UI. **Shadow DOM isolation is mandatory** (WXT `createIsolatedElement` / `shadowDom: true`) — page styles must not break the UI. Very high `z-index`.
 
 ### simulator (on demand)
+
 Reads a profile from `devices.ts`, applies the viewport inside a fixed host div, manages orientation/zoom/UA.
 
 ## 6. Design System Generator
@@ -116,12 +129,12 @@ See [`../operations/DEPLOYMENT.md`](../operations/DEPLOYMENT.md).
 
 ## 9. Test strategy
 
-| Area | Test |
-|------|------|
-| `design-system/export*` | Unit test — token → valid CSS/SCSS/JSON/Tailwind (snapshot + parse) |
-| `color/format` | Unit test — HEX↔RGB↔HSL conversions |
-| `messaging` | Type-check (compile) is sufficient |
-| Inspector/overlay/simulator | Manual/E2E (smoke test on a few real sites) |
+| Area                        | Test                                                                |
+| --------------------------- | ------------------------------------------------------------------- |
+| `design-system/export*`     | Unit test — token → valid CSS/SCSS/JSON/Tailwind (snapshot + parse) |
+| `color/format`              | Unit test — HEX↔RGB↔HSL conversions                                 |
+| `messaging`                 | Type-check (compile) is sufficient                                  |
+| Inspector/overlay/simulator | Manual/E2E (smoke test on a few real sites)                         |
 
 Pure transform logic (export, color format) is tested; DOM/overlay UI uses manual smoke tests instead of heavy E2E. See [`../engineering/TESTING.md`](../engineering/TESTING.md).
 

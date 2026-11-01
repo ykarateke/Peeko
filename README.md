@@ -19,20 +19,29 @@ Local-first, zero telemetry. The extension makes no network requests of its own;
 
 ## Documentation
 
-| Area | Document |
-|------|----------|
-| **Agent guidance** | [`AGENTS.md`](AGENTS.md) |
-| **Product** | [`docs/product/PRD.md`](docs/product/PRD.md) · [`ROADMAP.md`](docs/product/ROADMAP.md) · [`ACCEPTANCE_CRITERIA.md`](docs/product/ACCEPTANCE_CRITERIA.md) |
-| **Architecture** | [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) · [`TECHNICAL_DESIGN.md`](docs/architecture/TECHNICAL_DESIGN.md) · [`DECISIONS.md`](docs/architecture/DECISIONS.md) |
-| **Engineering** | [`docs/engineering/API_SPEC.md`](docs/engineering/API_SPEC.md) · [`DATABASE.md`](docs/engineering/DATABASE.md) · [`CODING_STANDARDS.md`](docs/engineering/CODING_STANDARDS.md) · [`TESTING.md`](docs/engineering/TESTING.md) |
-| **Operations** | [`docs/operations/DEPLOYMENT.md`](docs/operations/DEPLOYMENT.md) · [`SECURITY.md`](docs/operations/SECURITY.md) · [`OBSERVABILITY.md`](docs/operations/OBSERVABILITY.md) |
-| **Planning** | [`docs/planning/TASKS.md`](docs/planning/TASKS.md) |
+| Area               | Document                                                                                                                                                                                                                     |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Agent guidance** | [`AGENTS.md`](AGENTS.md)                                                                                                                                                                                                     |
+| **Product**        | [`docs/product/PRD.md`](docs/product/PRD.md) · [`ROADMAP.md`](docs/product/ROADMAP.md) · [`ACCEPTANCE_CRITERIA.md`](docs/product/ACCEPTANCE_CRITERIA.md)                                                                     |
+| **Architecture**   | [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) · [`TECHNICAL_DESIGN.md`](docs/architecture/TECHNICAL_DESIGN.md) · [`DECISIONS.md`](docs/architecture/DECISIONS.md)                                 |
+| **Engineering**    | [`docs/engineering/API_SPEC.md`](docs/engineering/API_SPEC.md) · [`DATABASE.md`](docs/engineering/DATABASE.md) · [`CODING_STANDARDS.md`](docs/engineering/CODING_STANDARDS.md) · [`TESTING.md`](docs/engineering/TESTING.md) |
+| **Operations**     | [`docs/operations/DEPLOYMENT.md`](docs/operations/DEPLOYMENT.md) · [`SECURITY.md`](docs/operations/SECURITY.md) · [`OBSERVABILITY.md`](docs/operations/OBSERVABILITY.md)                                                     |
+| **Planning**       | [`docs/planning/TASKS.md`](docs/planning/TASKS.md)                                                                                                                                                                           |
 
 > `API_SPEC.md` documents the **internal typed message protocol** between contexts (there is no HTTP API). `DATABASE.md` documents the **`chrome.storage.local` preference schema** (there is no database).
 
 ## Status
 
-Pre-implementation. The docs are the source of truth; no code is scaffolded yet. See [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md).
+v0.1.0 — all features (F1–F8) implemented and packaged for Chrome + Firefox; store listing assets are the remaining pre-publish step. See [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md).
+
+### Develop
+
+```
+pnpm install
+pnpm dev            # Chrome (HMR)   ·   pnpm dev:firefox
+pnpm check          # lint + typecheck + unit tests
+pnpm build          # → .output/chrome-mv3   ·   pnpm build:firefox
+```
 
 ## Tech stack
 

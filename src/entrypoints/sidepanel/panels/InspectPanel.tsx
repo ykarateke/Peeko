@@ -49,7 +49,17 @@ export function InspectPanel({ info, inspecting, onToggle }: Props) {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       // crop the captured viewport to the element's box (element must be in view)
-      ctx.drawImage(img, Math.round(x * dpr), Math.round(y * dpr), canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(
+        img,
+        Math.round(x * dpr),
+        Math.round(y * dpr),
+        canvas.width,
+        canvas.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height,
+      );
       canvas.toBlob((blob) => {
         if (!blob) return;
         const url = URL.createObjectURL(blob);
@@ -62,10 +72,7 @@ export function InspectPanel({ info, inspecting, onToggle }: Props) {
 
   return (
     <>
-      <button
-        className={`btn inspect-toggle${inspecting ? ' is-on' : ''}`}
-        onClick={onToggle}
-      >
+      <button className={`btn inspect-toggle${inspecting ? ' is-on' : ''}`} onClick={onToggle}>
         <CursorIcon size={14} /> {inspecting ? 'Stop inspecting' : 'Start inspecting'}
       </button>
 
@@ -73,7 +80,9 @@ export function InspectPanel({ info, inspecting, onToggle }: Props) {
         <div className="placeholder">
           <p className="placeholder-title">{inspecting ? 'Pick an element' : 'Nothing selected'}</p>
           <p className="placeholder-sub">
-            {inspecting ? 'Hover the page and click an element.' : 'Start inspecting, then click an element.'}
+            {inspecting
+              ? 'Hover the page and click an element.'
+              : 'Start inspecting, then click an element.'}
           </p>
         </div>
       ) : (
@@ -86,7 +95,11 @@ export function InspectPanel({ info, inspecting, onToggle }: Props) {
             <button className="btn btn-sm" onClick={copyCss} title="Copy all as CSS">
               {copied?.startsWith(info.selector) ? 'Copied' : 'Copy CSS'}
             </button>
-            <button className="btn btn-sm" onClick={screenshot} title="Screenshot element (must be in view)">
+            <button
+              className="btn btn-sm"
+              onClick={screenshot}
+              title="Screenshot element (must be in view)"
+            >
               PNG
             </button>
           </div>

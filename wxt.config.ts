@@ -6,8 +6,7 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
     name: 'Peeko',
-    description:
-      'Local-first design inspection & asset extraction. Zero backend, zero telemetry.',
+    description: 'Local-first design inspection & asset extraction. Zero backend, zero telemetry.',
     action: {
       default_icon: {
         '16': 'icon/16.png',

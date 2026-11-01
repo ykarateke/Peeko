@@ -112,7 +112,7 @@ export function extractAssets(doc: Document): Asset[] {
   return out;
 }
 
-function nameFromUrl(u: string): string {
+export function nameFromUrl(u: string): string {
   if (u.startsWith('data:')) return 'inline';
   try {
     const path = new URL(u).pathname;
@@ -123,7 +123,7 @@ function nameFromUrl(u: string): string {
   }
 }
 
-function fontFormat(u: string): string | undefined {
+export function fontFormat(u: string): string | undefined {
   const m = u.match(/\.(woff2?|ttf|otf|eot)(\?|#|$)/i);
   return m ? m[1]!.toUpperCase() : undefined;
 }

@@ -10,10 +10,10 @@
 
 ## Keys
 
-| Key | Type | Default | Notes |
-|-----|------|---------|-------|
-| `prefs` | `Preferences` | see below | Single object holding all user settings |
-| `schemaVersion` | `number` | `1` | For future migrations |
+| Key             | Type          | Default   | Notes                                   |
+| --------------- | ------------- | --------- | --------------------------------------- |
+| `prefs`         | `Preferences` | see below | Single object holding all user settings |
+| `schemaVersion` | `number`      | `1`       | For future migrations                   |
 
 Storing everything under one `prefs` object keeps reads/writes atomic and migrations simple.
 
@@ -21,19 +21,19 @@ Storing everything under one `prefs` object keeps reads/writes atomic and migrat
 
 ```ts
 interface Preferences {
-  theme: "system" | "light" | "dark";          // default: "system"
-  defaultColorFormat: "hex" | "rgb" | "hsl";    // default: "hex"
-  downloadFolder: string;                        // default: "Peeko"
+  theme: 'system' | 'light' | 'dark'; // default: "system"
+  defaultColorFormat: 'hex' | 'rgb' | 'hsl'; // default: "hex"
+  downloadFolder: string; // default: "Peeko"
   export: {
-    defaultFormat: "css" | "scss" | "json" | "tailwind" | "markdown"; // default: "css"
+    defaultFormat: 'css' | 'scss' | 'json' | 'tailwind' | 'markdown'; // default: "css"
   };
 }
 
 const DEFAULT_PREFS: Preferences = {
-  theme: "system",
-  defaultColorFormat: "hex",
-  downloadFolder: "Peeko",
-  export: { defaultFormat: "css" },
+  theme: 'system',
+  defaultColorFormat: 'hex',
+  downloadFolder: 'Peeko',
+  export: { defaultFormat: 'css' },
 };
 ```
 

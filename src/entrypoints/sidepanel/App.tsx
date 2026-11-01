@@ -26,9 +26,7 @@ import { SettingsPanel } from './panels/SettingsPanel';
 import { Placeholder } from './panels/Placeholder';
 
 type Load<T> =
-  | { state: 'loading' }
-  | { state: 'ready'; data: T }
-  | { state: 'error'; restricted: boolean };
+  { state: 'loading' } | { state: 'ready'; data: T } | { state: 'error'; restricted: boolean };
 
 type View = null | 'simulator' | 'capture' | 'settings';
 
@@ -80,6 +78,8 @@ export function App() {
     const onMsg = (m: Msg) => {
       if (m.type === 'ELEMENT_CLICKED') {
         setSelected(m.data);
+        setInspecting(true);
+      } else if (m.type === 'INSPECTOR_STARTED') {
         setInspecting(true);
       } else if (m.type === 'INSPECTOR_STOPPED') {
         setInspecting(false);
@@ -151,7 +151,11 @@ export function App() {
         {view === null && tab === 'Styles' && (
           <Loaded load={styles} restrictedTitle="Can't inspect this page">
             {(d) => (
-              <StylesPanel colors={d.colors} fonts={d.fonts} defaultColorFormat={prefs.defaultColorFormat} />
+              <StylesPanel
+                colors={d.colors}
+                fonts={d.fonts}
+                defaultColorFormat={prefs.defaultColorFormat}
+              />
             )}
           </Loaded>
         )}

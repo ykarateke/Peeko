@@ -12,13 +12,13 @@
 
 ### Where to look when something breaks
 
-| Symptom | Where to inspect |
-|---------|------------------|
-| Panel UI issue | Side-panel DevTools console |
-| Message not arriving | Background service worker console (relay logs: inject/retry) |
-| Overlay/inspect/simulator issue | Page DevTools console (content-script context) |
-| "Nothing happens" on a page | Check for `RestrictedTabError` — likely a `chrome://`/extension page |
-| Download didn't land | Background console + browser Downloads list; verify `Peeko/` folder |
+| Symptom                         | Where to inspect                                                     |
+| ------------------------------- | -------------------------------------------------------------------- |
+| Panel UI issue                  | Side-panel DevTools console                                          |
+| Message not arriving            | Background service worker console (relay logs: inject/retry)         |
+| Overlay/inspect/simulator issue | Page DevTools console (content-script context)                       |
+| "Nothing happens" on a page     | Check for `RestrictedTabError` — likely a `chrome://`/extension page |
+| Download didn't land            | Background console + browser Downloads list; verify `Peeko/` folder  |
 
 ## User-facing signals
 

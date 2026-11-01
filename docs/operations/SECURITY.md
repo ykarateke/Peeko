@@ -13,14 +13,14 @@ This is the hard invariant from [`../architecture/DECISIONS.md`](../architecture
 
 ## Permission rationale
 
-| Permission | Why it is needed | Why it is safe |
-|------------|------------------|----------------|
-| `<all_urls>` (host) | Inspect/extract on any site the user visits | Scripts run only in response to user action; no auto-exfiltration |
-| `activeTab` + `scripting` | Inject overlay/simulator into the current tab | Injection is on-demand and user-triggered |
-| `downloads` | Save assets to the `Peeko/` folder | Only downloads URLs the user selected |
-| `sidePanel` (Chrome) / `sidebarAction` (Firefox) | The main UI surface | UI only |
-| `storage` | Persist user preferences | `storage.local` only; nothing leaves the device |
-| `tabs` | Query active tab, route messages, `captureVisibleTab` | No browsing-history collection |
+| Permission                                       | Why it is needed                                      | Why it is safe                                                    |
+| ------------------------------------------------ | ----------------------------------------------------- | ----------------------------------------------------------------- |
+| `<all_urls>` (host)                              | Inspect/extract on any site the user visits           | Scripts run only in response to user action; no auto-exfiltration |
+| `activeTab` + `scripting`                        | Inject overlay/simulator into the current tab         | Injection is on-demand and user-triggered                         |
+| `downloads`                                      | Save assets to the `Peeko/` folder                    | Only downloads URLs the user selected                             |
+| `sidePanel` (Chrome) / `sidebarAction` (Firefox) | The main UI surface                                   | UI only                                                           |
+| `storage`                                        | Persist user preferences                              | `storage.local` only; nothing leaves the device                   |
+| `tabs`                                           | Query active tab, route messages, `captureVisibleTab` | No browsing-history collection                                    |
 
 No `identity` permission (no auth). No request-header modification beyond best-effort UA simulation (ADR-008).
 

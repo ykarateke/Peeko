@@ -23,7 +23,7 @@ Short ADRs capturing the choices that shape the codebase. Format: Context → De
 ## ADR-004 — Background service worker as central relay
 
 **Context.** In MV3 the side panel and page content scripts cannot message each other directly; content scripts may be absent or forbidden on a page.
-**Decision.** Route all panel ↔ page messages through the background service worker, with a resilient pattern: on *"receiving end does not exist"*, inject the content script and retry; on restricted pages raise `RestrictedTabError`.
+**Decision.** Route all panel ↔ page messages through the background service worker, with a resilient pattern: on _"receiving end does not exist"_, inject the content script and retry; on restricted pages raise `RestrictedTabError`.
 **Consequences.** One place handles injection, retries, and restricted-page errors. All features depend on this relay being correct (see [`ARCHITECTURE.md`](ARCHITECTURE.md) §5).
 
 ## ADR-005 — Shadow DOM isolation for in-page UI
@@ -41,7 +41,7 @@ Short ADRs capturing the choices that shape the codebase. Format: Context → De
 ## ADR-007 — Pure core, impure edges
 
 **Context.** DOM-dependent code is hard to test; export/format logic is pure and valuable to verify.
-**Decision.** Separate DOM scanning (token/asset *extraction*) from pure transforms (exporters, color conversions). Pure modules take data in and return strings/objects out.
+**Decision.** Separate DOM scanning (token/asset _extraction_) from pure transforms (exporters, color conversions). Pure modules take data in and return strings/objects out.
 **Consequences.** Exporters and color-format functions are unit-tested; DOM/overlay/simulator rely on manual smoke tests. See [`../engineering/TESTING.md`](../engineering/TESTING.md).
 
 ## ADR-008 — Device simulation over UA spoofing

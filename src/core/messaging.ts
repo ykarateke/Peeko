@@ -74,6 +74,7 @@ export type Msg =
   | { type: 'GET_PAGE_ASSETS' }
   | { type: 'GET_DESIGN_TOKENS' }
   | { type: 'ELEMENT_CLICKED'; data: ElementInfo }
+  | { type: 'INSPECTOR_STARTED' }
   | { type: 'INSPECTOR_STOPPED' }
   | { type: 'OPEN_OVERLAY'; tabId?: number }
   | { type: 'START_COLOR_PICKER' }

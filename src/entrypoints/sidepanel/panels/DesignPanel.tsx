@@ -21,12 +21,30 @@ interface Format {
 }
 
 const FORMATS: Format[] = [
-  { key: 'agent', label: 'AI Brief', file: 'peeko-agent-brief.md', mime: 'text/markdown', run: exportAgentBrief },
+  {
+    key: 'agent',
+    label: 'AI Brief',
+    file: 'peeko-agent-brief.md',
+    mime: 'text/markdown',
+    run: exportAgentBrief,
+  },
   { key: 'css', label: 'CSS', file: 'peeko-tokens.css', mime: 'text/css', run: exportCss },
   { key: 'scss', label: 'SCSS', file: 'peeko-tokens.scss', mime: 'text/x-scss', run: exportScss },
-  { key: 'json', label: 'JSON', file: 'peeko-tokens.json', mime: 'application/json', run: exportJson },
+  {
+    key: 'json',
+    label: 'JSON',
+    file: 'peeko-tokens.json',
+    mime: 'application/json',
+    run: exportJson,
+  },
   { key: 'tailwind', label: 'Tailwind', file: 'theme.css', mime: 'text/css', run: exportTailwind },
-  { key: 'markdown', label: 'Markdown', file: 'design.md', mime: 'text/markdown', run: exportMarkdown },
+  {
+    key: 'markdown',
+    label: 'Markdown',
+    file: 'design.md',
+    mime: 'text/markdown',
+    run: exportMarkdown,
+  },
 ];
 
 export function DesignPanel({

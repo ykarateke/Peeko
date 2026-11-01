@@ -8,7 +8,9 @@ export function SimulatorPanel() {
 
   function open(d: DeviceProfile) {
     const { width, height } = orient(d, landscape);
-    browser.runtime.sendMessage({ type: 'SIMULATOR_ACTIVATE', payload: { width, height } }).catch(() => {});
+    browser.runtime
+      .sendMessage({ type: 'SIMULATOR_ACTIVATE', payload: { width, height } })
+      .catch(() => {});
   }
 
   return (

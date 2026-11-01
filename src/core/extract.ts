@@ -32,15 +32,13 @@ export function extractPageStyles(doc: Document): PageStyles {
     .slice(0, MAX_COLORS)
     .map(([hex]) => hex);
 
-  const fontTokens: FontToken[] = [...fonts.entries()]
-    .slice(0, MAX_FONTS)
-    .map(([name, info]) => ({
-      name,
-      role: info.heading ? 'Headings' : 'Body',
-      css: `font-family: ${quoteFamily(name)}, sans-serif;`,
-      tw: `font-['${name.replace(/\s+/g, '_')}']`,
-      weights: [...info.weights].sort((a, b) => a - b),
-    }));
+  const fontTokens: FontToken[] = [...fonts.entries()].slice(0, MAX_FONTS).map(([name, info]) => ({
+    name,
+    role: info.heading ? 'Headings' : 'Body',
+    css: `font-family: ${quoteFamily(name)}, sans-serif;`,
+    tw: `font-['${name.replace(/\s+/g, '_')}']`,
+    weights: [...info.weights].sort((a, b) => a - b),
+  }));
 
   return { colors, fonts: fontTokens, elementCount: doc.querySelectorAll('*').length };
 }
@@ -66,7 +64,10 @@ function clamp(n: number): number {
 }
 
 export function primaryFamily(fontFamily: string): string | null {
-  const first = fontFamily.split(',')[0]?.trim().replace(/^["']|["']$/g, '');
+  const first = fontFamily
+    .split(',')[0]
+    ?.trim()
+    .replace(/^["']|["']$/g, '');
   return first ? first : null;
 }
 

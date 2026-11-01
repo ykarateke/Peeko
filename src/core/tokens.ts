@@ -72,7 +72,10 @@ export function extractTokens(doc: Document): DesignTokens {
     .slice(0, 24)
     .map(([hex]) => hex);
 
-  const spacingPx = [...spacing].sort((a, b) => a - b).slice(0, 14).map((n) => `${n}px`);
+  const spacingPx = [...spacing]
+    .sort((a, b) => a - b)
+    .slice(0, 14)
+    .map((n) => `${n}px`);
 
   return {
     colors,
@@ -176,10 +179,7 @@ function cleanStyle(el: Element, props: string[]): Record<string, string> {
   const cs = getComputedStyle(el);
   const out: Record<string, string> = {};
   for (const p of props) {
-    let v =
-      p === 'border'
-        ? synthBorder(cs)
-        : cs.getPropertyValue(p).trim();
+    let v = p === 'border' ? synthBorder(cs) : cs.getPropertyValue(p).trim();
     if (!v || NOISE.has(v)) continue;
     if ((p === 'color' || p === 'background-color') && v.startsWith('rgb')) v = toHex(v) ?? v;
     out[p] = v;
@@ -226,7 +226,9 @@ function detectContainers(doc: Document): string[] {
     if (n !== null && n >= 320 && n <= 2000) vals.set(mw, (vals.get(mw) ?? 0) + 1);
   };
   doc
-    .querySelectorAll('main, article, [class*="container" i], [class*="wrapper" i], [class*="content" i]')
+    .querySelectorAll(
+      'main, article, [class*="container" i], [class*="wrapper" i], [class*="content" i]',
+    )
     .forEach((el) => add(getComputedStyle(el).maxWidth));
   if (vals.size === 0) {
     Array.from(doc.querySelectorAll<HTMLElement>('body *'))
@@ -281,12 +283,12 @@ function collectMedia(rules: CSSRuleList, out: Set<number>): void {
   }
 }
 
-function pxNum(v: string): number | null {
+export function pxNum(v: string): number | null {
   const m = v.match(/^(-?\d+(?:\.\d+)?)px$/);
   return m && m[1] !== undefined ? parseFloat(m[1]) : null;
 }
 
-function msOf(v: string): number {
+export function msOf(v: string): number {
   const n = parseFloat(v);
   if (Number.isNaN(n)) return 0;
   return v.trim().endsWith('ms') ? n : n * 1000;

@@ -1,6 +1,8 @@
 # Testing — Peeko
 
-Test only what's worth testing. Pure transforms get fast unit tests; DOM/overlay/simulator get manual smoke tests on real sites. There is no heavy E2E for v1.
+Test only what's worth testing. Pure transforms get fast unit tests (`vitest`, scoped to `src/**/*.test.ts` — 51 tests across color, exporters, inspect, prefs, assets, tokens, devices). DOM/overlay/simulator get manual smoke tests on real sites, plus a **Playwright E2E smoke** (`e2e/smoke.spec.ts`, `pnpm test:e2e`) that loads the built extension and asserts the side panel boots — run it after `pnpm build` and `pnpm exec playwright install chromium`.
+
+Lint/format: `pnpm lint` (ESLint flat config) and `pnpm format`. `pnpm check` runs lint + typecheck + unit tests. CI runs all of this plus both builds.
 
 ## Philosophy
 
@@ -8,12 +10,12 @@ The valuable, breakable logic is **pure**: design-system exporters and color-for
 
 ## What is tested, and how
 
-| Area | Test type | What it asserts |
-|------|-----------|-----------------|
-| `core/design-system/export*` | Unit | token object → valid CSS/SCSS/JSON/Tailwind/Markdown (snapshot + real parse, not just string match) |
-| `core/color/format` | Unit | HEX↔RGB↔HSL conversions are correct and round-trip |
-| `core/messaging` | Compile-time | The `Msg` union type-checks across all contexts (no runtime test needed) |
-| Inspector / overlay / simulator | Manual smoke | Works on a handful of real, varied sites |
+| Area                            | Test type    | What it asserts                                                                                     |
+| ------------------------------- | ------------ | --------------------------------------------------------------------------------------------------- |
+| `core/design-system/export*`    | Unit         | token object → valid CSS/SCSS/JSON/Tailwind/Markdown (snapshot + real parse, not just string match) |
+| `core/color/format`             | Unit         | HEX↔RGB↔HSL conversions are correct and round-trip                                                  |
+| `core/messaging`                | Compile-time | The `Msg` union type-checks across all contexts (no runtime test needed)                            |
+| Inspector / overlay / simulator | Manual smoke | Works on a handful of real, varied sites                                                            |
 
 ### Exporter tests
 

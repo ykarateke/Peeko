@@ -9,6 +9,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 First packaged release (F1–F8 complete). Store/AMO packages: `peeko-0.1.0-chrome.zip`,
 `peeko-0.1.0-firefox.zip`, `peeko-0.1.0-sources.zip`.
 
+### Engineering
+- **ESLint 10 (flat config) + Prettier** wired; `pnpm lint` / `pnpm format` / `pnpm check`. TypeScript pinned to 5.9 (typescript-eslint doesn't yet support TS 7).
+- **CI** (`.github/workflows/ci.yml`): lint → typecheck → test → build (chrome + firefox).
+- **Vitest config** restricts unit runs to `src/**/*.test.ts`; coverage grown to **51 tests** (added `assets`, `tokens`, `devices`, contrast).
+- **Playwright E2E scaffold** (`e2e/smoke.spec.ts`, `pnpm test:e2e`) — loads the built extension and asserts the side panel boots (run after `playwright install chromium`).
+- **Inspect sync fix:** content now emits `INSPECTOR_STARTED`, so the toolbar toggle stays in sync when inspect is started via the keyboard shortcut.
+- **A11y & polish:** `:focus-visible` rings, `prefers-reduced-motion` support, dark-mode asset-thumbnail backgrounds.
+
 ### Added
 - **Store icon** — Peeko mark (a lowercase "p" whose counter reads as a lens), hand-authored SVG, rasterized to `public/icon/{16,32,48,96,128,512}.png`; wired into the manifest `icons` + `action.default_icon`. Provenance: authored directly, no model/backend.
 - Project documentation set (product, architecture, engineering, operations, planning).
