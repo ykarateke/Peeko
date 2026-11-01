@@ -3,6 +3,8 @@
 export interface ElementInfo {
   selector: string;
   box: string; // "width × height"
+  rect: { x: number; y: number; width: number; height: number }; // viewport px, for screenshots
+  dpr: number;
   typography: Record<string, string>;
   color: Record<string, string>;
   layout: Record<string, string>;

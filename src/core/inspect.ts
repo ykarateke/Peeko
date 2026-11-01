@@ -76,6 +76,8 @@ export function readElementInfo(el: Element): ElementInfo {
     ...groupComputed(get),
     selector: selectorFor(el),
     box: `${Math.round(rect.width)} × ${Math.round(rect.height)}`,
+    rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+    dpr: window.devicePixelRatio || 1,
   };
 }
 

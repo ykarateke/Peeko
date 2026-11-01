@@ -27,7 +27,13 @@ const FOLDER: Record<AssetType, string> = {
 const EXT: Partial<Record<AssetType, string>> = { svg: '.svg' };
 const THUMBABLE: ReadonlySet<AssetType> = new Set(['image', 'svg', 'icon']);
 
-export function AssetsPanel({ assets }: { assets: Asset[] }) {
+export function AssetsPanel({
+  assets,
+  downloadFolder = 'Peeko',
+}: {
+  assets: Asset[];
+  downloadFolder?: string;
+}) {
   const [filter, setFilter] = useState<Filter>('all');
   const [copied, copyUrl] = useCopy();
   const [zip, setZip] = useState<{ done: number; total: number } | null>(null);
@@ -43,7 +49,7 @@ export function AssetsPanel({ assets }: { assets: Asset[] }) {
       triggerDownload(a.url, a.name === 'inline' ? 'inline.svg' : a.name);
       return;
     }
-    const folder = a.type === 'font' ? 'Peeko/fonts/' : 'Peeko/';
+    const folder = a.type === 'font' ? `${downloadFolder}/fonts/` : `${downloadFolder}/`;
     browser.runtime
       .sendMessage({
         type: a.type === 'font' ? 'DOWNLOAD_FONT' : 'DOWNLOAD_IMAGE',

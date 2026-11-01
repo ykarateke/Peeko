@@ -4,6 +4,7 @@ import { extractAssets } from '../core/assets';
 import { extractTokens } from '../core/tokens';
 import { readElementInfo } from '../core/inspect';
 import { createHighlighter, type Highlighter } from '../core/highlight';
+import { createRuler, type Ruler } from '../core/ruler';
 
 // Inspection engine: hover highlight + click-to-read. Runs in every frame.
 export default defineContentScript({
@@ -15,6 +16,7 @@ export default defineContentScript({
     let raf = 0;
     let hovered: Element | null = null;
     let selectedEl: Element | null = null;
+    let ruler: Ruler | null = null;
     const isTopFrame = window.top === window.self;
 
     const onMove = (e: MouseEvent) => {
@@ -51,6 +53,7 @@ export default defineContentScript({
 
     function start() {
       if (inspecting) return;
+      stopRuler(true); // mutually exclusive with the ruler
       inspecting = true;
       highlighter = createHighlighter();
       document.documentElement.style.cursor = 'crosshair';
@@ -78,6 +81,20 @@ export default defineContentScript({
       if (notify) browser.runtime.sendMessage({ type: 'INSPECTOR_STOPPED' }).catch(() => {});
     }
 
+    function startRuler() {
+      if (ruler) return;
+      stop(true); // mutually exclusive with inspect
+      ruler = createRuler(() => stopRuler(true));
+      browser.runtime.sendMessage({ type: 'RULER_STATE_CHANGED', active: true }).catch(() => {});
+    }
+
+    function stopRuler(notify: boolean) {
+      if (!ruler) return;
+      ruler.destroy();
+      ruler = null;
+      if (notify) browser.runtime.sendMessage({ type: 'RULER_STATE_CHANGED', active: false }).catch(() => {});
+    }
+
     browser.runtime.onMessage.addListener((message: Msg, _sender, sendResponse) => {
       switch (message.type) {
         case 'GET_INSPECT_STATUS':
@@ -91,6 +108,15 @@ export default defineContentScript({
         case 'STOP_INSPECT':
           stop(false);
           sendResponse({ inspecting });
+          return true;
+        case 'TOGGLE_PAGE_RULER':
+          if (ruler) stopRuler(false);
+          else startRuler();
+          sendResponse({ active: ruler !== null });
+          return true;
+        case 'STOP_PAGE_RULER':
+          stopRuler(false);
+          sendResponse({ active: false });
           return true;
         case 'GET_PAGE_STYLES':
           if (!isTopFrame) return undefined; // only the top frame answers, avoids duplicate replies

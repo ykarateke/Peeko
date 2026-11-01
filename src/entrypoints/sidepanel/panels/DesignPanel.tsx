@@ -29,8 +29,14 @@ const FORMATS: Format[] = [
   { key: 'markdown', label: 'Markdown', file: 'design.md', mime: 'text/markdown', run: exportMarkdown },
 ];
 
-export function DesignPanel({ tokens }: { tokens: DesignTokens }) {
-  const [key, setKey] = useState<string>('agent');
+export function DesignPanel({
+  tokens,
+  defaultFormat = 'agent',
+}: {
+  tokens: DesignTokens;
+  defaultFormat?: string;
+}) {
+  const [key, setKey] = useState<string>(defaultFormat);
   const [copied, copy] = useCopy();
   const current = FORMATS.find((f) => f.key === key) ?? FORMATS[0]!;
   const output = useMemo(() => current.run(tokens), [current, tokens]);

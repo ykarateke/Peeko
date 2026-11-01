@@ -1,5 +1,7 @@
+import { browser } from 'wxt/browser';
 import { type ElementInfo } from '../../../core/messaging';
 import { useCopy } from '../useCopy';
+import { triggerDownload } from '../download';
 import { CursorIcon } from '../icons';
 
 type GroupKey = 'typography' | 'color' | 'layout' | 'borderEffects';
@@ -31,6 +33,33 @@ export function InspectPanel({ info, inspecting, onToggle }: Props) {
     copy(`${info.selector} {\n${lines.join('\n')}\n}`);
   }
 
+  async function screenshot() {
+    if (!info) return;
+    const res = (await browser.runtime
+      .sendMessage({ type: 'CAPTURE_SCREENSHOT' })
+      .catch(() => null)) as { ok?: boolean; data?: string } | null;
+    if (!res?.ok || !res.data) return;
+    const img = new Image();
+    img.onload = () => {
+      const dpr = info.dpr || 1;
+      const { x, y, width, height } = info.rect;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(width * dpr));
+      canvas.height = Math.max(1, Math.round(height * dpr));
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      // crop the captured viewport to the element's box (element must be in view)
+      ctx.drawImage(img, Math.round(x * dpr), Math.round(y * dpr), canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        triggerDownload(url, 'peeko-element.png');
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    };
+    img.src = res.data;
+  }
+
   return (
     <>
       <button
@@ -56,6 +85,9 @@ export function InspectPanel({ info, inspecting, onToggle }: Props) {
             <span className="inspect-box">{info.box}</span>
             <button className="btn btn-sm" onClick={copyCss} title="Copy all as CSS">
               {copied?.startsWith(info.selector) ? 'Copied' : 'Copy CSS'}
+            </button>
+            <button className="btn btn-sm" onClick={screenshot} title="Screenshot element (must be in view)">
+              PNG
             </button>
           </div>
 

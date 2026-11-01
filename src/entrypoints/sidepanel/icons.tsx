@@ -90,3 +90,15 @@ export const SearchIcon = (p: P) => (
     <path d="M21 21l-4-4" />
   </Svg>
 );
+export const CameraIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </Svg>
+);
+export const GearIcon = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2.5l1.2 2.3 2.5-.6.6 2.5 2.3 1.2-1.1 2.3 1.1 2.3-2.3 1.2-.6 2.5-2.5-.6L12 21.5l-1.2-2.3-2.5.6-.6-2.5L5.4 16l1.1-2.3L5.4 11.4l2.3-1.2.6-2.5 2.5.6z" />
+  </Svg>
+);

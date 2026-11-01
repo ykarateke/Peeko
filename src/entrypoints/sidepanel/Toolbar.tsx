@@ -3,39 +3,61 @@ import {
   PhoneIcon,
   RulerIcon,
   RefreshIcon,
-  BookmarkIcon,
+  CameraIcon,
+  GearIcon,
   CollapseIcon,
 } from './icons';
 
 interface Props {
   inspecting: boolean;
+  rulerActive: boolean;
   onToggleInspect: () => void;
+  onToggleRuler: () => void;
+  onSimulator: () => void;
+  onCapture: () => void;
+  onSettings: () => void;
   onRescan: () => void;
 }
 
-export function Toolbar({ inspecting, onToggleInspect, onRescan }: Props) {
+export function Toolbar({
+  inspecting,
+  rulerActive,
+  onToggleInspect,
+  onToggleRuler,
+  onSimulator,
+  onCapture,
+  onSettings,
+  onRescan,
+}: Props) {
   return (
     <div className="toolbar">
       <button
         className={`icon-btn${inspecting ? ' is-active' : ''}`}
-        title="Inspect (toggle)"
+        title="Inspect (Alt+Shift+I)"
         onClick={onToggleInspect}
       >
         <CursorIcon />
       </button>
-      <button className="icon-btn" title="Device simulator">
+      <button className="icon-btn" title="Device simulator" onClick={onSimulator}>
         <PhoneIcon />
       </button>
-      <button className="icon-btn" title="Measure / ruler">
+      <button
+        className={`icon-btn${rulerActive ? ' is-active' : ''}`}
+        title="Measure / ruler"
+        onClick={onToggleRuler}
+      >
         <RulerIcon />
+      </button>
+      <button className="icon-btn" title="Screenshot" onClick={onCapture}>
+        <CameraIcon />
       </button>
       <button className="icon-btn" title="Re-scan page" onClick={onRescan}>
         <RefreshIcon />
       </button>
-      <button className="icon-btn" title="Saved">
-        <BookmarkIcon />
+      <button className="icon-btn" title="Settings" onClick={onSettings}>
+        <GearIcon />
       </button>
-      <button className="icon-btn" title="Collapse panel">
+      <button className="icon-btn" title="Close panel" onClick={() => window.close()}>
         <CollapseIcon />
       </button>
     </div>

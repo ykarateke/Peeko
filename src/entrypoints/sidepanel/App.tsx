@@ -7,12 +7,22 @@ import {
   type Msg,
   type PageStyles,
 } from '../../core/messaging';
+import {
+  DEFAULT_PREFS,
+  getPrefs,
+  setPrefs,
+  onPrefsChanged,
+  type Preferences,
+} from '../../core/prefs';
 import { Toolbar } from './Toolbar';
 import { Tabs, type Tab } from './Tabs';
 import { StylesPanel } from './panels/StylesPanel';
 import { AssetsPanel } from './panels/AssetsPanel';
 import { InspectPanel } from './panels/InspectPanel';
 import { DesignPanel } from './panels/DesignPanel';
+import { SimulatorPanel } from './panels/SimulatorPanel';
+import { CapturePanel } from './panels/CapturePanel';
+import { SettingsPanel } from './panels/SettingsPanel';
 import { Placeholder } from './panels/Placeholder';
 
 type Load<T> =
@@ -20,13 +30,18 @@ type Load<T> =
   | { state: 'ready'; data: T }
   | { state: 'error'; restricted: boolean };
 
+type View = null | 'simulator' | 'capture' | 'settings';
+
 export function App() {
   const [tab, setTab] = useState<Tab>('Styles');
+  const [view, setView] = useState<View>(null);
   const [inspecting, setInspecting] = useState(false);
+  const [rulerActive, setRulerActive] = useState(false);
   const [selected, setSelected] = useState<ElementInfo | null>(null);
   const [styles, setStyles] = useState<Load<PageStyles>>({ state: 'loading' });
   const [assets, setAssets] = useState<Load<Asset[]>>({ state: 'loading' });
   const [design, setDesign] = useState<Load<DesignTokens>>({ state: 'loading' });
+  const [prefs, setPrefsState] = useState<Preferences>(DEFAULT_PREFS);
 
   const query = useCallback(function <T>(type: Msg['type'], set: (l: Load<T>) => void) {
     set({ state: 'loading' });
@@ -47,7 +62,20 @@ export function App() {
 
   useEffect(() => refresh(), [refresh]);
 
-  // Content -> panel: selected element + inspect-stopped (ESC / toggle).
+  // Load prefs and keep them in sync.
+  useEffect(() => {
+    getPrefs().then(setPrefsState);
+    return onPrefsChanged(setPrefsState);
+  }, []);
+
+  // Apply theme.
+  useEffect(() => {
+    const el = document.documentElement;
+    if (prefs.theme === 'system') delete el.dataset.theme;
+    else el.dataset.theme = prefs.theme;
+  }, [prefs.theme]);
+
+  // Content -> panel events.
   useEffect(() => {
     const onMsg = (m: Msg) => {
       if (m.type === 'ELEMENT_CLICKED') {
@@ -55,30 +83,47 @@ export function App() {
         setInspecting(true);
       } else if (m.type === 'INSPECTOR_STOPPED') {
         setInspecting(false);
+      } else if (m.type === 'RULER_STATE_CHANGED') {
+        setRulerActive(m.active);
       }
     };
     browser.runtime.onMessage.addListener(onMsg);
     return () => browser.runtime.onMessage.removeListener(onMsg);
   }, []);
 
-  // Sync the toggle when the Inspect tab opens (e.g. started via keyboard).
+  // Sync inspect toggle when opening the Inspect tab (e.g. started via keyboard).
   useEffect(() => {
-    if (tab !== 'Inspect') return;
+    if (view !== null || tab !== 'Inspect') return;
     browser.runtime
       .sendMessage({ type: 'GET_INSPECT_STATUS' })
       .then((res: { ok: boolean; data?: { inspecting: boolean } }) => {
         if (res?.ok && res.data) setInspecting(res.data.inspecting);
       })
       .catch(() => {});
-  }, [tab]);
+  }, [tab, view]);
 
   function toggleInspect() {
     const next = !inspecting;
     setInspecting(next);
-    // Exercises the background relay (inject-and-retry). Full overlay lands later in M2.
     browser.runtime.sendMessage({ type: 'TOGGLE_INSPECT' }).catch(() => {
-      setInspecting((v) => !v); // revert on restricted page / no receiver
+      setInspecting((v) => !v);
     });
+  }
+
+  function toggleRuler() {
+    setRulerActive((v) => !v);
+    browser.runtime.sendMessage({ type: 'TOGGLE_PAGE_RULER' }).catch(() => {
+      setRulerActive((v) => !v);
+    });
+  }
+
+  function updatePrefs(patch: Partial<Preferences>) {
+    setPrefs(patch).then(setPrefsState);
+  }
+
+  function pickTab(t: Tab) {
+    setTab(t);
+    setView(null);
   }
 
   const count = styles.state === 'ready' ? styles.data.elementCount : null;
@@ -86,26 +131,41 @@ export function App() {
 
   return (
     <div className="app">
-      <Toolbar inspecting={inspecting} onToggleInspect={toggleInspect} onRescan={refresh} />
-      <Tabs active={tab} onChange={setTab} badges={{ Assets: assetBadge }} />
+      <Toolbar
+        inspecting={inspecting}
+        rulerActive={rulerActive}
+        onToggleInspect={toggleInspect}
+        onToggleRuler={toggleRuler}
+        onSimulator={() => setView('simulator')}
+        onCapture={() => setView('capture')}
+        onSettings={() => setView('settings')}
+        onRescan={refresh}
+      />
+      <Tabs active={tab} onChange={pickTab} badges={{ Assets: assetBadge }} />
 
       <main className="content">
-        {tab === 'Styles' && (
+        {view === 'simulator' && <SimulatorPanel />}
+        {view === 'capture' && <CapturePanel />}
+        {view === 'settings' && <SettingsPanel prefs={prefs} onChange={updatePrefs} />}
+
+        {view === null && tab === 'Styles' && (
           <Loaded load={styles} restrictedTitle="Can't inspect this page">
-            {(d) => <StylesPanel colors={d.colors} fonts={d.fonts} />}
+            {(d) => (
+              <StylesPanel colors={d.colors} fonts={d.fonts} defaultColorFormat={prefs.defaultColorFormat} />
+            )}
           </Loaded>
         )}
-        {tab === 'Assets' && (
+        {view === null && tab === 'Assets' && (
           <Loaded load={assets} restrictedTitle="Can't inspect this page">
-            {(d) => <AssetsPanel assets={d} />}
+            {(d) => <AssetsPanel assets={d} downloadFolder={prefs.downloadFolder} />}
           </Loaded>
         )}
-        {tab === 'Inspect' && (
+        {view === null && tab === 'Inspect' && (
           <InspectPanel info={selected} inspecting={inspecting} onToggle={toggleInspect} />
         )}
-        {tab === 'Design' && (
+        {view === null && tab === 'Design' && (
           <Loaded load={design} restrictedTitle="Can't inspect this page">
-            {(d) => <DesignPanel tokens={d} />}
+            {(d) => <DesignPanel tokens={d} defaultFormat={prefs.export.defaultFormat} />}
           </Loaded>
         )}
       </main>

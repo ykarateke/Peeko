@@ -32,10 +32,18 @@ function isLight(hex: string): boolean {
   return 0.299 * r + 0.587 * g + 0.114 * b > 225;
 }
 
-export function StylesPanel({ colors, fonts }: { colors: string[]; fonts: FontToken[] }) {
+export function StylesPanel({
+  colors,
+  fonts,
+  defaultColorFormat = 'hex',
+}: {
+  colors: string[];
+  fonts: FontToken[];
+  defaultColorFormat?: ColorFormat;
+}) {
   const [copied, copy] = useCopy();
   const [picked, setPicked] = useState<string[]>([]);
-  const [fmt, setFmt] = useState<ColorFormat>('hex');
+  const [fmt, setFmt] = useState<ColorFormat>(defaultColorFormat);
 
   const all = [...picked, ...colors];
   const bigColors = all.slice(0, 10);
