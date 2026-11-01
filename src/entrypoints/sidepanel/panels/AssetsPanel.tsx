@@ -14,11 +14,22 @@ const LABEL: Record<AssetType, string> = {
   lottie: 'Lottie',
   font: 'Fonts',
 };
+const FOLDER: Record<AssetType, string> = {
+  image: 'images',
+  svg: 'svg',
+  icon: 'icons',
+  video: 'video',
+  lottie: 'lottie',
+  font: 'fonts',
+};
+const EXT: Partial<Record<AssetType, string>> = { svg: '.svg' };
 const THUMBABLE: ReadonlySet<AssetType> = new Set(['image', 'svg', 'icon']);
 
 export function AssetsPanel({ assets }: { assets: Asset[] }) {
   const [filter, setFilter] = useState<Filter>('all');
   const [copied, setCopied] = useState<string | null>(null);
+  const [zip, setZip] = useState<{ done: number; total: number } | null>(null);
+  const [zipMsg, setZipMsg] = useState<string | null>(null);
 
   const counts = ORDER.map((t) => [t, assets.filter((a) => a.type === t).length] as const).filter(
     ([, n]) => n > 0,
@@ -37,10 +48,7 @@ export function AssetsPanel({ assets }: { assets: Asset[] }) {
 
   function download(a: Asset) {
     if (a.url.startsWith('data:')) {
-      const el = document.createElement('a');
-      el.href = a.url;
-      el.download = a.name;
-      el.click();
+      triggerDownload(a.url, a.name === 'inline' ? 'inline.svg' : a.name);
       return;
     }
     const folder = a.type === 'font' ? 'Peeko/fonts/' : 'Peeko/';
@@ -53,8 +61,44 @@ export function AssetsPanel({ assets }: { assets: Asset[] }) {
       .catch(() => {});
   }
 
+  async function downloadZip() {
+    if (zip || shown.length === 0) return;
+    setZipMsg(null);
+    setZip({ done: 0, total: shown.length });
+    const JSZip = (await import('jszip')).default;
+    const archive = new JSZip();
+    const used = new Set<string>();
+    let skipped = 0;
+
+    for (let i = 0; i < shown.length; i++) {
+      const a = shown[i];
+      if (a) {
+        try {
+          // Extension pages can fetch cross-origin thanks to <all_urls> host permission.
+          const res = await fetch(a.url);
+          if (!res.ok) throw new Error(String(res.status));
+          archive.file(`${FOLDER[a.type]}/${uniqueName(a, used)}`, await res.blob());
+        } catch {
+          skipped++;
+        }
+      }
+      setZip({ done: i + 1, total: shown.length });
+    }
+
+    const blob = await archive.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    triggerDownload(url, 'peeko-assets.zip');
+    URL.revokeObjectURL(url);
+    setZip(null);
+    setZipMsg(skipped ? `${shown.length - skipped} saved · ${skipped} skipped (CORS)` : null);
+  }
+
   if (assets.length === 0) {
-    return <div className="placeholder"><p className="placeholder-title">No assets found</p></div>;
+    return (
+      <div className="placeholder">
+        <p className="placeholder-title">No assets found</p>
+      </div>
+    );
   }
 
   return (
@@ -76,6 +120,12 @@ export function AssetsPanel({ assets }: { assets: Asset[] }) {
           </button>
         ))}
       </div>
+
+      <button className="btn zip-btn" onClick={downloadZip} disabled={!!zip}>
+        <DownloadIcon size={14} />
+        {zip ? `Zipping ${zip.done}/${zip.total}…` : `Download ZIP (${shown.length})`}
+      </button>
+      {zipMsg && <div className="zip-msg">{zipMsg}</div>}
 
       <div className="asset-grid">
         {shown.map((a, i) => (
@@ -109,4 +159,25 @@ export function AssetsPanel({ assets }: { assets: Asset[] }) {
       </div>
     </>
   );
+}
+
+function triggerDownload(href: string, name: string) {
+  const el = document.createElement('a');
+  el.href = href;
+  el.download = name;
+  el.click();
+}
+
+function uniqueName(a: Asset, used: Set<string>): string {
+  let base = (a.name && a.name !== 'inline' ? a.name : a.type).replace(/[\\/:*?"<>|]+/g, '_');
+  if (!/\.[a-z0-9]+$/i.test(base)) base += EXT[a.type] ?? '';
+  let name = base;
+  let n = 1;
+  while (used.has(name)) {
+    const dot = base.lastIndexOf('.');
+    name = dot > 0 ? `${base.slice(0, dot)}-${n}${base.slice(dot)}` : `${base}-${n}`;
+    n++;
+  }
+  used.add(name);
+  return name;
 }

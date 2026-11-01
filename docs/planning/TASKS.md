@@ -29,7 +29,7 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 - [x] F3: extractors for images, SVG (inline + file), icons, video, Lottie, fonts (`core/assets.ts`).
 - [x] F3: list + preview UI with type filter + real counts (`AssetsPanel`).
 - [x] F3: single download → `Peeko/` (fonts → `Peeko/fonts/`) via background `downloads`; inline SVG via blob. + copy URL.
-- [ ] F3: bulk ZIP download (JSZip).
+- [x] F3: bulk ZIP download (JSZip, lazy-loaded) — zips the current filter, foldered by type, cross-origin fetch via `<all_urls>`, skips blocked assets with a count.
 
 ## M4 — Design System
 

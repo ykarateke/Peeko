@@ -386,6 +386,21 @@ body {
   color: var(--text-2);
 }
 
+.zip-btn {
+  width: 100%;
+  margin-bottom: 9px;
+}
+.zip-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.zip-msg {
+  margin: -3px 0 9px;
+  font-size: 10.5px;
+  color: var(--text-3);
+  text-align: center;
+}
+
 .asset-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

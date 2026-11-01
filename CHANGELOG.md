@@ -14,7 +14,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Styles panel UI** (first panel): toolbar, tabs (Styles/Assets/Inspect/Design), COLORS swatch grid, TYPOGRAPHY font cards with one-click CSS/TW copy and weight chips, footer.
 - **Real page extraction** (`core/extract.ts`): the Styles panel reads the active page's dominant color palette, font families (with weights) and element count via the content → background relay, with a toolbar rescan and loading/restricted states.
 - **Styles color tools:** Pick Color (native `EyeDropper`), Export Palette (CSS download), and a HEX/RGB/HSL format toggle that drives every copy and the export (`core/color.ts`).
-- **Assets panel:** extracts images, SVG (inline + file), icons, video, Lottie and fonts from the page (`core/assets.ts`); type filter with real counts, preview grid, copy URL, and single download to `Peeko/` (fonts to `Peeko/fonts/`) via the `downloads` API. Bulk ZIP still pending.
+- **Assets panel:** extracts images, SVG (inline + file), icons, video, Lottie and fonts from the page (`core/assets.ts`); type filter with real counts, preview grid, copy URL, and single download to `Peeko/` (fonts to `Peeko/fonts/`) via the `downloads` API. **Bulk ZIP download** (JSZip, lazy-loaded) packages the current filter, foldered by type, with progress and a skipped-count for blocked assets.
 - **Testing:** vitest set up; `core/color.ts` and `toHex` covered (`pnpm test`).
 
 ### Planned
