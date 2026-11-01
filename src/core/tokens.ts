@@ -19,6 +19,9 @@ export function extractTokens(doc: Document): DesignTokens {
   const radii = new Set<string>();
   const shadows = new Set<string>();
   const gradients = new Set<string>();
+  const containers = new Map<string, number>();
+  const durations = new Set<string>();
+  const easings = new Set<string>();
 
   const addColor = (c: string) => {
     const h = toHex(c);
@@ -60,6 +63,24 @@ export function extractTokens(doc: Document): DesignTokens {
     if (cs.borderRadius && cs.borderRadius !== '0px') radii.add(cs.borderRadius);
     if (cs.boxShadow && cs.boxShadow !== 'none') shadows.add(cs.boxShadow);
     if (cs.backgroundImage.includes('gradient(')) gradients.add(cs.backgroundImage);
+
+    const mw = pxNum(cs.maxWidth);
+    if (mw !== null && mw >= 320 && mw <= 2000) containers.set(cs.maxWidth, (containers.get(cs.maxWidth) ?? 0) + 1);
+
+    let hasDuration = false;
+    for (const d of cs.transitionDuration.split(',')) {
+      const v = d.trim();
+      if (v && v !== '0s') {
+        durations.add(v);
+        hasDuration = true;
+      }
+    }
+    if (hasDuration) {
+      for (const e of cs.transitionTimingFunction.split(',')) {
+        const v = e.trim();
+        if (v) easings.add(v);
+      }
+    }
   }
 
   const colors = [...colorCount.entries()]
@@ -81,6 +102,11 @@ export function extractTokens(doc: Document): DesignTokens {
     shadows: [...shadows].slice(0, 10),
     gradients: [...gradients].slice(0, 10),
     breakpoints: extractBreakpoints(doc),
+    containers: [...containers.keys()]
+      .sort((a, b) => (pxNum(a) ?? 0) - (pxNum(b) ?? 0))
+      .slice(0, 6),
+    durations: [...durations].sort((a, b) => msOf(a) - msOf(b)).slice(0, 8),
+    easings: [...easings].slice(0, 8),
     headings: detectHeadings(doc),
     body: detectBody(doc),
     bodyColor: doc.body ? toHex(getComputedStyle(doc.body).color) : null,
@@ -216,4 +242,10 @@ function collectMedia(rules: CSSRuleList, out: Set<number>): void {
 function pxNum(v: string): number | null {
   const m = v.match(/^(-?\d+(?:\.\d+)?)px$/);
   return m && m[1] !== undefined ? parseFloat(m[1]) : null;
+}
+
+function msOf(v: string): number {
+  const n = parseFloat(v);
+  if (Number.isNaN(n)) return 0;
+  return v.trim().endsWith('ms') ? n : n * 1000;
 }

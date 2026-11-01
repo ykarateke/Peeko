@@ -21,6 +21,9 @@ const t: DesignTokens = {
   shadows: ['rgba(0, 0, 0, 0.1) 0px 1px 2px 0px'],
   gradients: [],
   breakpoints: ['640px', '1024px'],
+  containers: ['1200px'],
+  durations: ['150ms', '300ms'],
+  easings: ['ease-in-out', 'cubic-bezier(0.4, 0, 0.2, 1)'],
   headings: {
     h1: { size: '32px', weight: '700', lineHeight: '40px' },
     h2: { size: '24px', weight: '600', lineHeight: '32px' },
@@ -99,6 +102,12 @@ describe('exportAgentBrief', () => {
   it('embeds a copy-pastable CSS token block', () => {
     expect(brief).toContain('```css');
     expect(brief).toContain('--color-1: #4b74ff;');
+  });
+  it('includes container max-width and motion', () => {
+    expect(brief).toContain('Container max-width');
+    expect(brief).toContain('## Motion');
+    expect(brief).toContain('150ms');
+    expect(brief).toContain('cubic-bezier(0.4, 0, 0.2, 1)');
   });
 });
 

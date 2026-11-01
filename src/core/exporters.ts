@@ -23,6 +23,9 @@ function baseGroups(t: DesignTokens): { title: string; pairs: Pair[] }[] {
     { title: 'Shadows', pairs: t.shadows.map((s, i): Pair => [`shadow-${i + 1}`, s]) },
     { title: 'Gradients', pairs: t.gradients.map((g, i): Pair => [`gradient-${i + 1}`, g]) },
     { title: 'Breakpoints', pairs: t.breakpoints.map((b, i): Pair => [`bp-${i + 1}`, b]) },
+    { title: 'Containers', pairs: t.containers.map((c, i): Pair => [`container-${i + 1}`, c]) },
+    { title: 'Durations', pairs: t.durations.map((d, i): Pair => [`duration-${i + 1}`, d]) },
+    { title: 'Easings', pairs: t.easings.map((e, i): Pair => [`ease-${i + 1}`, e]) },
   ].filter((g) => g.pairs.length > 0);
 }
 
@@ -60,6 +63,8 @@ export function exportTailwind(t: DesignTokens): string {
   sec('Spacing', t.spacing.map((s, i): Pair => [`spacing-${i + 1}`, s]));
   sec('Radius', t.radii.map((r, i): Pair => [`radius-${i + 1}`, r]));
   sec('Shadow', t.shadows.map((s, i): Pair => [`shadow-${i + 1}`, s]));
+  sec('Containers', t.containers.map((c, i): Pair => [`container-${i + 1}`, c]));
+  sec('Easings', t.easings.map((e, i): Pair => [`ease-${i + 1}`, e]));
   out.push('}');
   return out.join('\n') + '\n';
 }
@@ -87,6 +92,8 @@ export function exportJson(t: DesignTokens): string {
     shadow: idx(t.shadows, (s) => ({ $value: s, $type: 'shadow' })),
     gradient: idx(t.gradients, (g) => ({ $value: g, $type: 'gradient' })),
     breakpoint: idx(t.breakpoints, (b) => ({ $value: b, $type: 'dimension' })),
+    container: idx(t.containers, (c) => ({ $value: c, $type: 'dimension' })),
+    duration: idx(t.durations, (d) => ({ $value: d, $type: 'duration' })),
     // Semantic/component data doesn't map to DTCG token types — kept under $extensions.
     $extensions: {
       'com.peeko': {
@@ -95,6 +102,7 @@ export function exportJson(t: DesignTokens): string {
         bodyColor: t.bodyColor,
         components: t.components,
         baseUnit: t.baseUnit,
+        easings: t.easings,
       },
     },
   };
@@ -123,6 +131,13 @@ export function exportMarkdown(t: DesignTokens): string {
 
   L.push('## Spacing', '', t.spacing.length ? `${list(t.spacing)}${baseNote(t)}` : '_none_', '');
   if (t.breakpoints.length) L.push('## Breakpoints', '', list(t.breakpoints), '');
+  if (t.containers.length) L.push('## Container max-width', '', list(t.containers), '');
+  if (t.durations.length || t.easings.length) {
+    L.push('## Motion', '');
+    if (t.durations.length) L.push(`- Durations: ${list(t.durations)}`);
+    if (t.easings.length) L.push(`- Easings: ${list(t.easings)}`);
+    L.push('');
+  }
   L.push(...componentSections(t));
   if (t.radii.length) L.push('## Radii', '', list(t.radii), '');
   if (t.shadows.length) L.push('## Shadows', '', ...t.shadows.map((s) => `- \`${s}\``), '');
@@ -182,7 +197,15 @@ export function exportAgentBrief(t: DesignTokens): string {
   L.push('## Spacing & layout', '');
   L.push(`- **Spacing scale:** ${t.spacing.length ? list(t.spacing) : '_none_'}${baseNote(t)}`);
   if (t.breakpoints.length) L.push(`- **Breakpoints:** ${list(t.breakpoints)}`);
+  if (t.containers.length) L.push(`- **Container max-width:** ${list(t.containers)} — cap page content at the largest.`);
   L.push('');
+
+  if (t.durations.length || t.easings.length) {
+    L.push('## Motion', '');
+    if (t.durations.length) L.push(`- **Durations:** ${list(t.durations)}`);
+    if (t.easings.length) L.push(`- **Easings:** ${list(t.easings)}`);
+    L.push('- Reuse these for transitions/animations so motion feels consistent.', '');
+  }
 
   L.push(...componentSections(t));
 
