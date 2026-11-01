@@ -60,7 +60,7 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 ## Capture & Export (independent module)
 
 - [x] Phase 1: **Export tab** — full-page (scroll-stitch), viewport, pick-element screenshots; PNG/JPEG/WebP; session gallery (`ExportPanel.tsx`, `capture.ts`, `core/capture-math.ts`, background `CAPTURE_FULL_PAGE`). Extension-native (no server/Playwright).
-- [ ] Phase 2: **Website Source Export (ZIP)** — fetch HTML/CSS/JS/assets, localize links, JSZip + resource `manifest.json` + success rate; **SSRF guard** (block localhost/private-IP/metadata), robots/copyright notice, timeout/retry, size cap.
+- [x] Phase 2: **Website Source Export (ZIP)** — fetch HTML/CSS/JS/assets, localize links + CSS `url()` rewrite, JSZip + resource `manifest.json` + success rate; **SSRF guard** (block non-http(s)/localhost/private-IP/metadata), timeout/retry, size+count caps; copyright notice in manifest. _(bare `@import "..."` strings + inline-`<style>` url() not yet localized; `<script>` kept as-is)_
 - [ ] Persistent capture/export history (IndexedDB) linked to the analysis.
 - [ ] Device-specific full-page capture (via the simulator window); keep the sticky header only on the first tile.
 

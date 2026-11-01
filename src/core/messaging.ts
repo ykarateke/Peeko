@@ -151,6 +151,7 @@ export type Msg =
   | { type: 'GET_PAGE_STYLES' }
   | { type: 'GET_PAGE_ASSETS' }
   | { type: 'GET_DESIGN_TOKENS' }
+  | { type: 'GET_PAGE_HTML' }
   | { type: 'ELEMENT_CLICKED'; data: ElementInfo }
   | { type: 'INSPECTOR_STARTED' }
   | { type: 'INSPECTOR_STOPPED' }

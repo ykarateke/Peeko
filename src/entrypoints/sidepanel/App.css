@@ -1593,3 +1593,33 @@ body {
   gap: 6px;
   padding: 8px 10px;
 }
+
+/* source export */
+.src-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-2);
+}
+.src-summary span {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+.src-failed {
+  color: #b4281e;
+}
+.export-file {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 72px;
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-3);
+}

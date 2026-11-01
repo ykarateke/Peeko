@@ -171,6 +171,13 @@ export default defineContentScript({
           if (!isTopFrame) return undefined;
           sendResponse(extractTokens(document));
           return true;
+        case 'GET_PAGE_HTML':
+          if (!isTopFrame) return undefined;
+          sendResponse({
+            html: '<!doctype html>\n' + document.documentElement.outerHTML,
+            baseUrl: document.baseURI,
+          });
+          return true;
         case 'GET_PAGE_METRICS':
           if (!isTopFrame) return undefined;
           sendResponse({

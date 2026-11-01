@@ -7,8 +7,9 @@ import {
   type PageMetrics,
 } from '../../../core/messaging';
 import { reencode, stitch, cropRect, type Capture, type ImgFormat } from '../capture';
+import { exportSource, type SourceSummary } from '../source';
 import { triggerDownload } from '../download';
-import { CameraIcon, PhoneIcon, CursorIcon } from '../icons';
+import { CameraIcon, PhoneIcon, CursorIcon, DownloadIcon } from '../icons';
 
 const FORMATS: ImgFormat[] = ['png', 'jpeg', 'webp'];
 type Sub = 'screenshots' | 'source' | 'history';
@@ -57,20 +58,17 @@ export function ExportPanel({
   const [fmt, setFmt] = useState<ImgFormat>('png');
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [srcSummary, setSrcSummary] = useState<SourceSummary | null>(null);
 
-  function add(blob: Blob, kind: string, truncated?: boolean) {
+  function record(blob: Blob, name: string, kind: string, truncated?: boolean) {
     const url = URL.createObjectURL(blob);
     setCaptures((prev) => [
-      {
-        id: `c${++seq}`,
-        name: `peeko-${kind}-${stamp()}.${fmt}`,
-        url,
-        size: blob.size,
-        kind,
-        truncated,
-      },
+      { id: `c${++seq}`, name, url, size: blob.size, kind, truncated },
       ...prev,
     ]);
+  }
+  function add(blob: Blob, kind: string, truncated?: boolean) {
+    record(blob, `peeko-${kind}-${stamp()}.${fmt}`, kind, truncated);
     setSub('history');
   }
 
@@ -115,6 +113,20 @@ export function ExportPanel({
       const r = await send({ type: 'CAPTURE_SCREENSHOT' });
       if (!r.ok || !r.data) throw new Error(restricted(r));
       add(await cropRect(r.data as string, info.rect, info.dpr, fmt), 'element');
+    });
+  }
+
+  function exportSourceZip() {
+    return run('Exporting source…', async () => {
+      setSrcSummary(null);
+      const r = await send({ type: 'GET_PAGE_HTML' });
+      if (!r.ok || !r.data) throw new Error(restricted(r));
+      const { html, baseUrl } = r.data as { html: string; baseUrl: string };
+      const { blob, summary } = await exportSource(html, baseUrl, (done, total) =>
+        setBusy(`Downloading ${done}/${total}…`),
+      );
+      record(blob, `peeko-source-${stamp()}.zip`, 'source');
+      setSrcSummary(summary);
     });
   }
 
@@ -174,9 +186,30 @@ export function ExportPanel({
       )}
 
       {sub === 'source' && (
-        <p className="view-note">
-          Website source export (HTML/CSS/JS/assets → ZIP) is coming in the next phase.
-        </p>
+        <>
+          <div className="export-actions">
+            <button className="btn" onClick={exportSourceZip} disabled={!!busy}>
+              <DownloadIcon size={14} /> Export source (ZIP)
+            </button>
+          </div>
+          {busy && <p className="view-note">{busy}</p>}
+          {err && <p className="view-note export-err">{err}</p>}
+          {srcSummary && (
+            <div className="src-summary">
+              <span>{srcSummary.files} files</span>
+              <span>{Math.round(srcSummary.bytes / 1024)} KB</span>
+              <span>{srcSummary.successRate}% success</span>
+              {srcSummary.failed > 0 && (
+                <span className="src-failed">{srcSummary.failed} failed</span>
+              )}
+            </div>
+          )}
+          <p className="view-note">
+            Fetches the page's accessible HTML/CSS/JS/images/fonts, localizes links, and zips them
+            with a<code> manifest.json</code>. Cross-origin/blocked resources are skipped (listed in
+            the manifest); the original source can't always be fully recovered.
+          </p>
+        </>
       )}
 
       {sub === 'history' &&
@@ -190,7 +223,11 @@ export function ExportPanel({
             {captures.map((c) => (
               <div className="export-item" key={c.id}>
                 <div className="export-thumb">
-                  <img src={c.url} alt={c.name} loading="lazy" />
+                  {c.kind === 'source' ? (
+                    <span className="export-file">ZIP</span>
+                  ) : (
+                    <img src={c.url} alt={c.name} loading="lazy" />
+                  )}
                 </div>
                 <div className="export-meta">
                   <span className="export-name" title={c.name}>

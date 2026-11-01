@@ -22,6 +22,7 @@ const RELAYED: ReadonlySet<Msg['type']> = new Set([
   'GET_PAGE_STYLES',
   'GET_PAGE_ASSETS',
   'GET_DESIGN_TOKENS',
+  'GET_PAGE_HTML',
   'TOGGLE_PAGE_RULER',
   'STOP_PAGE_RULER',
 ]);
