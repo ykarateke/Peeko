@@ -1,5 +1,6 @@
 import { type Msg } from '../core/messaging';
 import { extractPageStyles } from '../core/extract';
+import { extractAssets } from '../core/assets';
 
 // M1/M2: proves the relay pipe and serves real page styles. The hover/selection
 // overlay (full F1 inspect) lands later this milestone.
@@ -24,6 +25,10 @@ export default defineContentScript({
         case 'GET_PAGE_STYLES':
           if (!isTopFrame) return undefined; // only the top frame answers, avoids duplicate replies
           sendResponse(extractPageStyles(document));
+          return true;
+        case 'GET_PAGE_ASSETS':
+          if (!isTopFrame) return undefined;
+          sendResponse(extractAssets(document));
           return true;
         default:
           return undefined;

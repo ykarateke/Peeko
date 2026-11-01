@@ -5,7 +5,11 @@ import { type Msg, RestrictedTabError } from '../core/messaging';
 // `globalThis.browser?.runtime?.id ? browser : chrome` shim).
 
 // Panel -> page messages that the background forwards to the active tab.
-const RELAYED: ReadonlySet<Msg['type']> = new Set(['TOGGLE_INSPECT', 'GET_PAGE_STYLES']);
+const RELAYED: ReadonlySet<Msg['type']> = new Set([
+  'TOGGLE_INSPECT',
+  'GET_PAGE_STYLES',
+  'GET_PAGE_ASSETS',
+]);
 
 export default defineBackground(() => {
   // Chrome: open the side panel when the toolbar icon is clicked.
@@ -14,6 +18,13 @@ export default defineBackground(() => {
     .catch(() => {});
 
   browser.runtime.onMessage.addListener((message: Msg, _sender, sendResponse) => {
+    if (message.type === 'DOWNLOAD_IMAGE' || message.type === 'DOWNLOAD_FONT') {
+      browser.downloads
+        .download({ url: message.url, filename: message.filename })
+        .then(() => sendResponse({ ok: true }))
+        .catch((err: unknown) => sendResponse({ ok: false, error: String(err) }));
+      return true;
+    }
     if (RELAYED.has(message.type)) {
       relayToActiveTab(message)
         .then((data) => sendResponse({ ok: true, data }))

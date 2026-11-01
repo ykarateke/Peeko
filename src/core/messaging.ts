@@ -22,11 +22,21 @@ export interface PageStyles {
   elementCount: number;
 }
 
+export type AssetType = 'image' | 'svg' | 'icon' | 'video' | 'lottie' | 'font';
+
+export interface Asset {
+  type: AssetType;
+  url: string; // absolute URL, or a data: URL for inline SVG
+  name: string;
+  meta?: string; // dimensions / format hint
+}
+
 export type Msg =
   | { type: 'TOGGLE_INSPECT' }
   | { type: 'STOP_INSPECT' }
   | { type: 'GET_INSPECT_STATUS' }
   | { type: 'GET_PAGE_STYLES' }
+  | { type: 'GET_PAGE_ASSETS' }
   | { type: 'ELEMENT_CLICKED'; data: ElementInfo }
   | { type: 'INSPECTOR_STOPPED' }
   | { type: 'OPEN_OVERLAY'; tabId?: number }
