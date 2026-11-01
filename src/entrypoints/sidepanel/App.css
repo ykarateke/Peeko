@@ -493,6 +493,34 @@ body {
   border-color: var(--accent);
 }
 
+/* ---------- Design ---------- */
+.design-formats {
+  flex-wrap: wrap;
+  margin-bottom: 9px;
+}
+.design-formats .fmt {
+  flex: 0 1 auto;
+  padding: 5px 10px;
+}
+.code-preview {
+  margin: 10px 0 0;
+  padding: 12px;
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--code-bg);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.55;
+  color: #3a3f45;
+  white-space: pre;
+  tab-size: 2;
+}
+.code-preview code {
+  font: inherit;
+}
+
 /* ---------- Inspect ---------- */
 .inspect-toggle {
   width: 100%;

@@ -1,6 +1,7 @@
 import { type Msg } from '../core/messaging';
 import { extractPageStyles } from '../core/extract';
 import { extractAssets } from '../core/assets';
+import { extractTokens } from '../core/tokens';
 import { readElementInfo } from '../core/inspect';
 import { createHighlighter, type Highlighter } from '../core/highlight';
 
@@ -98,6 +99,10 @@ export default defineContentScript({
         case 'GET_PAGE_ASSETS':
           if (!isTopFrame) return undefined;
           sendResponse(extractAssets(document));
+          return true;
+        case 'GET_DESIGN_TOKENS':
+          if (!isTopFrame) return undefined;
+          sendResponse(extractTokens(document));
           return true;
         default:
           return undefined;

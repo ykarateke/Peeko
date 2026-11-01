@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { type FontToken } from '../../../core/messaging';
 import { formatColor, type ColorFormat } from '../../../core/color';
 import { useCopy } from '../useCopy';
+import { downloadText } from '../download';
 import {
   PaletteIcon,
   TypeIcon,
@@ -56,13 +57,7 @@ export function StylesPanel({ colors, fonts }: { colors: string[]; fonts: FontTo
   function exportPalette() {
     if (all.length === 0) return;
     const body = all.map((c, i) => `  --color-${i + 1}: ${formatColor(c, fmt)};`).join('\n');
-    const css = `:root {\n${body}\n}\n`;
-    const url = URL.createObjectURL(new Blob([css], { type: 'text/css' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'peeko-palette.css';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadText('peeko-palette.css', `:root {\n${body}\n}\n`, 'text/css');
   }
 
   return (

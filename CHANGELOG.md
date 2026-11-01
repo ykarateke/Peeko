@@ -17,6 +17,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Assets panel:** extracts images, SVG (inline + file), icons, video, Lottie and fonts from the page (`core/assets.ts`); type filter with real counts, preview grid, copy URL, and single download to `Peeko/` (fonts to `Peeko/fonts/`) via the `downloads` API. **Bulk ZIP download** (JSZip, lazy-loaded) packages the current filter, foldered by type, with progress and a skipped-count for blocked assets.
 - **Inspect panel (F1):** click any element to read its `getComputedStyle` grouped into Typography / Color / Layout / Border & Effects (`core/inspect.ts`), with a Shadow-DOM hover/selection highlight (`core/highlight.ts`), one-click copy per value, color swatches, and Copy-all-as-CSS. Multi-select; ESC or toggle to exit; `Alt+Shift+I` keyboard shortcut.
 - **Shared `useCopy` hook** — Styles and Assets refactored onto it.
+- **Design System panel (F4):** extracts tokens from the page — colors + semantic roles, type scale, weights, line-heights, spacing, radii, shadows, gradients, breakpoints (`core/tokens.ts`) — and exports to **CSS, SCSS, JSON (W3C DTCG-style), Tailwind v4 `@theme`, Markdown**, plus an **AI Agent Brief** (LLM-ready Markdown analysis an agent can use to rebuild the design) (`core/exporters.ts`). Live preview, copy, per-format download. Shared `download.ts` helper.
 - **Testing:** vitest; `core/color.ts`, `core/inspect.ts` and `toHex` covered (`pnpm test`, 16 tests).
 
 ### Planned

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { browser } from 'wxt/browser';
 import { type Asset, type AssetType } from '../../../core/messaging';
 import { useCopy } from '../useCopy';
+import { triggerDownload } from '../download';
 import { DownloadIcon } from '../icons';
 
 type Filter = 'all' | AssetType;
@@ -150,13 +151,6 @@ export function AssetsPanel({ assets }: { assets: Asset[] }) {
       </div>
     </>
   );
-}
-
-function triggerDownload(href: string, name: string) {
-  const el = document.createElement('a');
-  el.href = href;
-  el.download = name;
-  el.click();
 }
 
 function uniqueName(a: Asset, used: Set<string>): string {

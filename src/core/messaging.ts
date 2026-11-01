@@ -24,6 +24,22 @@ export interface PageStyles {
   elementCount: number;
 }
 
+/** Design tokens extracted from the active page (Design panel). */
+export interface DesignTokens {
+  colors: string[]; // hex, frequency-sorted
+  roles: Record<string, string>; // background/text/link/heading/accent/border -> hex
+  fontFamilies: string[];
+  fontSizes: string[]; // px, ascending (type scale)
+  fontWeights: number[];
+  lineHeights: string[];
+  spacing: string[]; // px, ascending
+  radii: string[];
+  shadows: string[];
+  gradients: string[];
+  breakpoints: string[]; // px, ascending
+  meta: { url: string; title: string; elementCount: number; generatedAt: string };
+}
+
 export type AssetType = 'image' | 'svg' | 'icon' | 'video' | 'lottie' | 'font';
 
 export interface Asset {
@@ -39,6 +55,7 @@ export type Msg =
   | { type: 'GET_INSPECT_STATUS' }
   | { type: 'GET_PAGE_STYLES' }
   | { type: 'GET_PAGE_ASSETS' }
+  | { type: 'GET_DESIGN_TOKENS' }
   | { type: 'ELEMENT_CLICKED'; data: ElementInfo }
   | { type: 'INSPECTOR_STOPPED' }
   | { type: 'OPEN_OVERLAY'; tabId?: number }

@@ -11,6 +11,7 @@ const RELAYED: ReadonlySet<Msg['type']> = new Set([
   'GET_INSPECT_STATUS',
   'GET_PAGE_STYLES',
   'GET_PAGE_ASSETS',
+  'GET_DESIGN_TOKENS',
 ]);
 
 export default defineBackground(() => {

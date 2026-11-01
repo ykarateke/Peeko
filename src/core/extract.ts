@@ -65,16 +65,16 @@ function clamp(n: number): number {
   return Math.max(0, Math.min(255, n));
 }
 
-function primaryFamily(fontFamily: string): string | null {
+export function primaryFamily(fontFamily: string): string | null {
   const first = fontFamily.split(',')[0]?.trim().replace(/^["']|["']$/g, '');
   return first ? first : null;
 }
 
-function quoteFamily(name: string): string {
+export function quoteFamily(name: string): string {
   return /\s/.test(name) ? `'${name}'` : name;
 }
 
-function weightOf(fw: string): number | null {
+export function weightOf(fw: string): number | null {
   if (fw === 'normal') return 400;
   if (fw === 'bold') return 700;
   const n = parseInt(fw, 10);

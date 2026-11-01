@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
-import { type Asset, type ElementInfo, type Msg, type PageStyles } from '../../core/messaging';
+import {
+  type Asset,
+  type DesignTokens,
+  type ElementInfo,
+  type Msg,
+  type PageStyles,
+} from '../../core/messaging';
 import { Toolbar } from './Toolbar';
 import { Tabs, type Tab } from './Tabs';
 import { StylesPanel } from './panels/StylesPanel';
 import { AssetsPanel } from './panels/AssetsPanel';
 import { InspectPanel } from './panels/InspectPanel';
+import { DesignPanel } from './panels/DesignPanel';
 import { Placeholder } from './panels/Placeholder';
 
 type Load<T> =
@@ -19,6 +26,7 @@ export function App() {
   const [selected, setSelected] = useState<ElementInfo | null>(null);
   const [styles, setStyles] = useState<Load<PageStyles>>({ state: 'loading' });
   const [assets, setAssets] = useState<Load<Asset[]>>({ state: 'loading' });
+  const [design, setDesign] = useState<Load<DesignTokens>>({ state: 'loading' });
 
   const query = useCallback(function <T>(type: Msg['type'], set: (l: Load<T>) => void) {
     set({ state: 'loading' });
@@ -34,6 +42,7 @@ export function App() {
   const refresh = useCallback(() => {
     query<PageStyles>('GET_PAGE_STYLES', setStyles);
     query<Asset[]>('GET_PAGE_ASSETS', setAssets);
+    query<DesignTokens>('GET_DESIGN_TOKENS', setDesign);
   }, [query]);
 
   useEffect(() => refresh(), [refresh]);
@@ -94,7 +103,11 @@ export function App() {
         {tab === 'Inspect' && (
           <InspectPanel info={selected} inspecting={inspecting} onToggle={toggleInspect} />
         )}
-        {tab === 'Design' && <Placeholder title="Design System" />}
+        {tab === 'Design' && (
+          <Loaded load={design} restrictedTitle="Can't inspect this page">
+            {(d) => <DesignPanel tokens={d} />}
+          </Loaded>
+        )}
       </main>
 
       <footer className="footer">

@@ -34,10 +34,10 @@ Working task breakdown, grouped by milestone (see [`../product/ROADMAP.md`](../p
 
 ## M4 — Design System
 
-- [ ] F4: `extractTokens(document)` (colors, typography, spacing, radii, shadows, gradients, breakpoints).
-- [ ] F4: pure exporters — CSS, SCSS, JSON, Tailwind, Markdown.
-- [ ] F4: exporter unit tests (parse/validate, not just snapshot).
-- [ ] F4: preview + copy + download in panel.
+- [x] F4: `extractTokens(document)` — colors + semantic roles, type scale, weights, line-heights, spacing, radii, shadows, gradients, breakpoints (`core/tokens.ts`).
+- [x] F4: pure exporters — CSS, SCSS, JSON (DTCG-style), Tailwind v4 `@theme`, Markdown + **AI Agent Brief** (`core/exporters.ts`).
+- [x] F4: exporter unit tests (parse/validate — `exporters.test.ts`, 8 cases).
+- [x] F4: `DesignPanel` — format selector, live preview, copy + download (per-format filename); shared `download.ts` helper (Styles/Assets refactored onto it).
 
 ## M5 — Simulator
 
